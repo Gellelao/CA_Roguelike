@@ -1,8 +1,8 @@
 extends Node2D
 
 #CA Stuff
-const NUMBER_OF_ORIGINS = 10
-const ITERATIONS = 2
+const NUMBER_OF_ORIGINS = 7
+const ITERATIONS = 4
 const GENERATION_WAIT_TIME = 0.5
 
 # Level stuff
@@ -34,16 +34,6 @@ class Cell extends Reference:
 		self.x = x
 		self.y = y
 		self.type = type
-	
-	func surrounded_by(typeSurroundedBy):
-		var count = 0
-		var neighbours = get_neighbours()
-		for i in range(3):
-			for j in range(3):
-				if(neighbours[i][j].type == typeSurroundedBy):
-					count += 1
-		if(neighbours[1][1].type == typeSurroundedBy): count -= 1 # Hack because the centre cell is often treated as floor
-		return count == 8
 		
 	func get_neighbours():
 		var neighbours = []
@@ -57,17 +47,18 @@ class Cell extends Reference:
 				else:
 					neighbours[iX].append(game.map[x-1+iX][y-1+iY])
 		return neighbours
-		
-	func set_neighbours(tilesToSet, typeToSet):
-		for iX in range(3):
-			for iY in range(3):
-				if(iX*iY == 1):
-					continue # skip middle cell
-				if(x == 0 and iX == 0 or y == 0 and iY == 0 or x == LEVEL_SIZE-1 and iX == 2 or y == LEVEL_SIZE-1 and iY == 2):
-					continue # Can't change cells outside the map
-				if(tilesToSet[iX][iY]):
-					game.update_cell(x-1+iX, y-1+iY, typeToSet)
 	
+	# Neighbour notation:
+	# 0 = Don't consider this neighbour
+	# 1 = Do consider this neighbour
+	func surrounded_by(typeSurroundedBy):
+		return has_neighbours([
+			[1, 1, 1],
+			[1, 0, 1],
+			[1, 1, 1]
+		], typeSurroundedBy)
+	
+	# Is at least one neighbour of type 'typeOfNeighbour'
 	func has_neighbour(typeOfNeighbour):
 		var count = 0
 		var neighbours = get_neighbours()
@@ -76,7 +67,40 @@ class Cell extends Reference:
 				if(i*j == 1): continue
 				if(neighbours[i][j].type == typeOfNeighbour): return true
 		return false
-
+	
+	# Are all 'neighboursToCheck' of type 'typeOfNeighbour'
+	func has_neighbours(neighboursToCheck, typeOfNeighbour):
+		var count = 0
+		var neighbours = get_neighbours()
+		for i in range(3):
+			for j in range(3):
+				if(i*j == 1): continue
+				if(neighboursToCheck[j][i] != 1): continue
+				if(neighbours[i][j].type != typeOfNeighbour): return false
+		return true
+	
+	# Are all 'neighboursToCheck' of type 'typeOfNeighbour',
+	# and no other neighbours are of that type
+	func has_only_neighbours(neighboursToCheck, typeOfNeighbour):
+		var count = 0
+		var neighbours = get_neighbours()
+		for i in range(3):
+			for j in range(3):
+				if(i*j == 1): continue
+				# Ensure that only the neighboursToCheck are of the type we want
+				if(neighboursToCheck[j][i] == 1 and neighbours[i][j].type != typeOfNeighbour): return false
+				if(neighboursToCheck[j][i] != 1 and neighbours[i][j].type == typeOfNeighbour): return false
+		return true
+	
+	func set_neighbours(tilesToSet, typeToSet):
+		for iX in range(3):
+			for iY in range(3):
+				if(iX*iY == 1):
+					continue # skip middle cell
+				if(x == 0 and iX == 0 or y == 0 and iY == 0 or x == LEVEL_SIZE-1 and iX == 2 or y == LEVEL_SIZE-1 and iY == 2):
+					continue # Can't change cells outside the map
+				if(tilesToSet[iY][iX] == 1): # Flip x and y here so that creating the tilesToSet array looks as it does in game
+					game.update_cell(x-1+iX, y-1+iY, typeToSet)
 
 ##============================================================##
 ##                                                            ##
@@ -159,20 +183,40 @@ func update_visuals():
 
 func apply_rules(cell):
 	match cell.type:
+		# Within each Match, rules at the top have least priority, as any cells
+		# modified by rules further down will override changes made by rules further up
 		
 		Tile.Floor:
 			# Floor tiles surrounded by walls set most of their neighbours to bumps
 			if(cell.surrounded_by(Tile.Wall)):
-				var tilesToSet = [
-					[true,true,true],
-					[true,true,false],
-					[true,true,true]
-				]
-				cell.set_neighbours(tilesToSet, Tile.Bumps)
+				cell.set_neighbours([
+					[1,1,1],
+					[1,0,0],
+					[1,1,1]
+				], Tile.Bumps)
 				
 		Tile.Wall:
 			# Walls turn into floors when touching bumps
 			if(cell.has_neighbour(Tile.Bumps)):
+				update_cell(cell.x, cell.y, Tile.Floor)
+				
+			if(cell.has_only_neighbours([
+				[1,0,0],
+				[0,0,0],
+				[0,0,0]
+			], Tile.Floor) or cell.has_only_neighbours([
+				[0,0,1],
+				[0,0,0],
+				[0,0,0]
+			], Tile.Floor) or cell.has_only_neighbours([
+				[0,0,0],
+				[0,0,0],
+				[1,0,0]
+			], Tile.Floor) or cell.has_only_neighbours([
+				[0,0,0],
+				[0,0,0],
+				[0,0,1]
+			], Tile.Floor)):
 				update_cell(cell.x, cell.y, Tile.Floor)
 
 func update_cell(x, y, type):
