@@ -6,6 +6,7 @@ const LEVEL_SIZE = 15 # Width and height, levels are square
 #CA Stuff
 const ORIGINS = 10
 const ITERATIONS = 2
+const GENERATION_WAIT_TIME = 0.05
 
 enum Tile {Wall, Floor, Bumps}
 
@@ -57,14 +58,17 @@ func build_level():
 	
 	# DO SOME CELLULAR AUTOMATA
 	for i in range(ITERATIONS):
+		yield(get_tree().create_timer(GENERATION_WAIT_TIME),"timeout")
 		for x in range(LEVEL_SIZE):
 			for y in range(LEVEL_SIZE):
 				print("checkin ", x, ", ", y)
-				yield(apply_rules(x, y), "completed")
+				apply_rules(x, y)
 		# copy the tiles into the map array now that all cells have decided their next state
 		for x in range(LEVEL_SIZE):
 			for y in range(LEVEL_SIZE):
 				map[x][y] = tile_map.get_cell(x, y)
+		
+		
 	
 	# Place the player
 	for x in range(LEVEL_SIZE):
@@ -96,14 +100,11 @@ func apply_rules(x, y):
 			[true,true,false],
 			[true,true,true]
 		]
-		yield(set_neighbours(x, y, tilesToSet, Tile.Bumps), "completed")
+		set_neighbours(x, y, tilesToSet, Tile.Bumps)
 	
 	# Walls turn into floors when touching bumps
 	if(map[x][y] == Tile.Wall and has_neighbour(x, y, Tile.Bumps)):
-		yield(update_cell(x, y, Tile.Floor), "completed")
-		
-	# Just so no errors:
-	yield(get_tree(), "idle_frame")
+		update_cell(x, y, Tile.Floor)
 
 func surrounded_by(x, y, type):
 	var count = 0
@@ -144,14 +145,12 @@ func set_neighbours(x, y, tilesToSet, type):
 			if(x == 0 and iX == 0 or y == 0 and iY == 0 or x == LEVEL_SIZE-1 and iX == 2 or y == LEVEL_SIZE-1 and iY == 2):
 				continue # Can't change cells outside the map
 			if(tilesToSet[iX][iY]):
-				yield(update_cell(x-1+iX, y-1+iY, type), "completed")
+				update_cell(x-1+iX, y-1+iY, type)
 			
 func update_cell(x, y, type):
 	print("setting cell for ", x, ", ", y)
 	# We don't update any arrays here because we'll do that once all the processing is done by copying the values from the tilemap
 	tile_map.set_cell(x, y, type)
-	#yield(get_tree().create_timer(0.00),"timeout")
-	yield(get_tree(), "idle_frame")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
