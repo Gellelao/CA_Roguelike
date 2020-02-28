@@ -1,15 +1,15 @@
 extends Node2D
 
 #CA Stuff
-const NUMBER_OF_ORIGINS = 7
-const ITERATIONS = 4
+const NUMBER_OF_ORIGINS = 5
+const ITERATIONS = 10
 const GENERATION_WAIT_TIME = 0.5
 
 # Level stuff
 const TILE_SIZE = 8
 const LEVEL_SIZE = 15 # Levels are square
 
-enum Tile {Wall, Floor, Bumps}
+enum Tile {Floor, Wall, Pit, HCorridor, VCorridor}
 var map = []
 
 onready var tile_map = $TileMap
@@ -82,21 +82,38 @@ class Cell extends Reference:
 	# Are all 'neighboursToCheck' of type 'typeOfNeighbour',
 	# and no other neighbours are of that type
 	func has_only_neighbours(neighboursToCheck, typeOfNeighbour):
-		var count = 0
-		var neighbours = get_neighbours()
+		# First, lets find out how which 'layers' we're dealing with:
+		var layers = []
 		for i in range(3):
 			for j in range(3):
-				if(i*j == 1): continue
-				# Ensure that only the neighboursToCheck are of the type we want
-				if(neighboursToCheck[j][i] == 1 and neighbours[i][j].type != typeOfNeighbour): return false
-				if(neighboursToCheck[j][i] != 1 and neighbours[i][j].type == typeOfNeighbour): return false
-		return true
+				var layerIndex = neighboursToCheck[j][i]
+				if(!layerIndex in layers):
+					layers.append(layerIndex)
+					
+		var numberOfLayers = layers.size()
+		if(0 in layers): numberOfLayers -= 1
+		
+		var failedLayers = 0;
+		var neighbours = get_neighbours()
+		for layer in layers:
+			if(layer == 0): continue
+			var failedCells = 0
+			for i in range(3):
+				for j in range(3):
+					if(i*j == 1): continue # Centre cell
+					
+					if((neighboursToCheck[j][i] == layer and neighbours[i][j].type != typeOfNeighbour) ||
+					   (neighboursToCheck[j][i] != layer and neighbours[i][j].type == typeOfNeighbour)): failedCells += 1
+			if(failedCells > 0): failedLayers += 1
+			
+		# Can't have any layer checks fail if we want to return true here
+		return failedLayers < numberOfLayers
 	
 	func set_neighbours(tilesToSet, typeToSet):
 		for iX in range(3):
 			for iY in range(3):
-				if(iX*iY == 1):
-					continue # skip middle cell
+				#if(iX*iY == 1):
+				#	continue # skip middle cell
 				if(x == 0 and iX == 0 or y == 0 and iY == 0 or x == LEVEL_SIZE-1 and iX == 2 or y == LEVEL_SIZE-1 and iY == 2):
 					continue # Can't change cells outside the map
 				if(tilesToSet[iY][iX] == 1): # Flip x and y here so that creating the tilesToSet array looks as it does in game
@@ -168,11 +185,13 @@ func build_level():
 	call_deferred("update_visuals")
 
 func try_move(dx, dy):
+	if(playerCoords == null):
+		return
 	var x = playerCoords.x + dx 
 	var y = playerCoords.y + dy
 	var tile_type = Tile.Wall
 	if x >= 0 && x < LEVEL_SIZE && y >= 0 && y < LEVEL_SIZE:
-		tile_type = map[x][y]
+		tile_type = map[x][y].type
 	match tile_type:
 		Tile.Floor:
 			playerCoords = Vector2(x, y)
@@ -190,34 +209,35 @@ func apply_rules(cell):
 			# Floor tiles surrounded by walls set most of their neighbours to bumps
 			if(cell.surrounded_by(Tile.Wall)):
 				cell.set_neighbours([
-					[1,1,1],
-					[1,0,0],
-					[1,1,1]
-				], Tile.Bumps)
+					[1,1,0],
+					[0,1,0],
+					[1,1,0]
+				], Tile.Pit)
+				# Also set self to a pit, to fill in the centre hole
+				#update_cell(cell.x, cell.y, Tile.Pit)
+			if(cell.has_neighbours([
+				[0,1,0],
+				[0,0,0],
+				[0,1,0]
+			], Tile.Wall)):
+				update_cell(cell.x, cell.y, Tile.HCorridor)
 				
 		Tile.Wall:
-			# Walls turn into floors when touching bumps
-			if(cell.has_neighbour(Tile.Bumps)):
+			# Walls turn into floors when touching pits
+			if(cell.has_neighbour(Tile.Pit)):
 				update_cell(cell.x, cell.y, Tile.Floor)
-				
 			if(cell.has_only_neighbours([
 				[1,0,0],
 				[0,0,0],
-				[0,0,0]
-			], Tile.Floor) or cell.has_only_neighbours([
-				[0,0,1],
-				[0,0,0],
-				[0,0,0]
-			], Tile.Floor) or cell.has_only_neighbours([
-				[0,0,0],
-				[0,0,0],
-				[1,0,0]
-			], Tile.Floor) or cell.has_only_neighbours([
-				[0,0,0],
-				[0,0,0],
-				[0,0,1]
+				[0,0,2]
 			], Tile.Floor)):
 				update_cell(cell.x, cell.y, Tile.Floor)
+			if(cell.has_only_neighbours([
+				[0,0,0],
+				[1,0,2],
+				[0,0,0]
+			], Tile.HCorridor)):
+				update_cell(cell.x, cell.y, Tile.HCorridor)
 
 func update_cell(x, y, type):
 	# We don't update any arrays here because we'll do that once all the processing is done by copying the values from the tilemap
