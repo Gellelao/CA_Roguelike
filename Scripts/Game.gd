@@ -1,7 +1,7 @@
 extends Node2D
 
 #CA Stuff
-const NUMBER_OF_ORIGINS = 5
+const NUMBER_OF_ORIGINS = 4
 const ITERATIONS = 10
 const GENERATION_WAIT_TIME = 0.5
 
@@ -188,10 +188,14 @@ func build_level():
 			# tile_map modifies the game tiles
 			tile_map.set_cell(x, y, wallCell.type)
 	
+	var xQuadrants = [randi() % LEVEL_SIZE/2, (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2,
+					randi() % LEVEL_SIZE/2, (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2]
+	var yQuadrants = [randi() % LEVEL_SIZE/2, randi() % LEVEL_SIZE/2,
+					 (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2, (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2]
 	# Set some initial seeds for the automata
 	for i in range(NUMBER_OF_ORIGINS):
-		var originX = randi() % LEVEL_SIZE
-		var originY = randi() % LEVEL_SIZE
+		var originX = xQuadrants[i]
+		var originY = yQuadrants[i]
 		# Do a similar thing as above, but just set a few tiles to floor
 		var floorCell = Cell.new(self, originX, originY, Tile.Floor)
 		map[originX][originY] = floorCell
