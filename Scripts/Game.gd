@@ -4,6 +4,11 @@ extends Node2D
 const NUMBER_OF_ORIGINS = 4
 const ITERATIONS = 10
 const GENERATION_WAIT_TIME = 0.5
+const VON_NEUMANN = [
+	[0,1,0],
+	[1,0,1],
+	[0,1,0],
+]
 
 # Level stuff
 const TILE_SIZE = 8
@@ -58,12 +63,32 @@ class Cell extends Reference:
 			[1, 1, 1]
 		], typeSurroundedBy)
 	
+	func count_all_neighbours(typeOfNeighbour):
+		return count_neighbours([
+			[1, 1, 1],
+			[1, 0, 1],
+			[1, 1, 1]
+		], typeOfNeighbour)
+		
+	func count_neighbours(neighboursToCheck, typeOfNeighbour):
+		var count = 0
+		var neighbours = get_neighbours()
+		for i in range(3):
+			var row = [];
+			for j in range(3):
+				row.append(neighbours[i][j].type)
+				if(i*j == 1): continue
+				if(neighboursToCheck[j][i] != 1): continue
+				if(neighbours[i][j].type == typeOfNeighbour): count += 1
+			print(row)
+		print(count)
+		return count
+	
 	# Is at least one neighbour of type 'typeOfNeighbour'
 	func has_any_neighbour(typeOfNeighbour):
 		return has_neighbour([[1,1,1],[1,0,1],[1,1,1]], typeOfNeighbour)
 	
 	func has_neighbour(neighboursToCheck, typeOfNeighbour):
-		var count = 0
 		var neighbours = get_neighbours()
 		for i in range(3):
 			for j in range(3):
@@ -74,7 +99,6 @@ class Cell extends Reference:
 	
 	# Are all 'neighboursToCheck' of type 'typeOfNeighbour'
 	func has_neighbours(neighboursToCheck, typeOfNeighbour):
-		var count = 0
 		var neighbours = get_neighbours()
 		for i in range(3):
 			for j in range(3):
@@ -175,19 +199,19 @@ func _input(event):
 		handle_input({"cast": "destroy"})
 
 func build_level():
-	map.clear()
-	tile_map.clear()
+	#map.clear()
+	#tile_map.clear()
 	
 	# Make it all walls
 	for x in range(LEVEL_SIZE):
 		map.append([])
 		for y in range(LEVEL_SIZE):
-			var wallCell = Cell.new(self, x, y, Tile.Wall)
+			var wallCell = Cell.new(self, x, y, Tile.Wall) if (randi() % 2) else Cell.new(self, x, y, Tile.Crossroads)
 			# Map keeps track of the data
 			map[x].append(wallCell)
 			# tile_map modifies the game tiles
 			tile_map.set_cell(x, y, wallCell.type)
-	
+
 	var xQuadrants = [randi() % LEVEL_SIZE/2, (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2,
 					randi() % LEVEL_SIZE/2, (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2]
 	var yQuadrants = [randi() % LEVEL_SIZE/2, randi() % LEVEL_SIZE/2,
@@ -260,90 +284,15 @@ func apply_rules(cell):
 		# Within each Match, rules at the top have least priority, as any cells
 		# modified by rules further down will override changes made by rules further up
 		
-		Tile.Floor:
-			# Floors become horizontal corridoors when there are walls above and below
-			if(cell.has_neighbours([
-				[0,1,0],
-				[0,0,0],
-				[0,1,0]
-			], Tile.Wall)):
-				update_cell(cell.x, cell.y, Tile.HCorridor)
-			
-			# Floors become vertical corridoors when there are walls on left and right
-			if(cell.has_neighbours([
-				[0,0,0],
-				[1,0,1],
-				[0,0,0]
-			], Tile.Wall)):
-				update_cell(cell.x, cell.y, Tile.VCorridor)
-				
-			# Floor tiles surrounded by walls generate pits (has priority over previous two rules so is placed after them)
-			if(cell.surrounded_by(Tile.Wall)):
-				cell.set_neighbours([
-					[0,0,0],
-					[0,1,0],
-					[0,0,0]
-				], Tile.Pit)
-				cell.set_random_neighbours([
-					[0,1,0],
-					[1,0,1],
-					[0,1,0]
-				], 2, 2, Tile.Pit)
-			
-			var wallSymmetries = generate_symmetries([[1,1,1],
-													  [0,0,0],
-													  [0,0,0]])
-													
-			var pitSymmetries = generate_symmetries([[0,0,0],
-													 [0,0,0],
-													 [0,1,0]])
-												
-			var floorSymmetries = generate_symmetries([[0,1,0],
-													   [0,0,0],
-													   [0,0,0]])
-			for i in range(4):
-				if( cell.has_only_neighbours(wallSymmetries[i], Tile.Wall) && 
-					cell.has_only_neighbours(pitSymmetries[i], Tile.Pit)):
-						cell.set_neighbours(floorSymmetries[i], Tile.Floor)
-				
 		Tile.Wall:
-			# Walls turn into floors when touching pits
-			if(cell.has_any_neighbour(Tile.Pit)):
+			if(cell.count_neighbours(VON_NEUMANN, Tile.Wall) > 2 or cell.count_neighbours(VON_NEUMANN, Tile.Floor) > 1):
 				update_cell(cell.x, cell.y, Tile.Floor)
-			
-			# Walls adjacent to corridors in the right orientation turn into corridoors
-			if(cell.has_only_neighbours([
-				[0,0,0],
-				[1,0,2],
-				[0,0,0]
-			], Tile.HCorridor)):
-				update_cell(cell.x, cell.y, Tile.HCorridor)
-			
-			# Walls adjacent to corridors in the right orientation turn into corridoors
-			if(cell.has_only_neighbours([
-				[0,1,0],
-				[0,0,0],
-				[0,2,0]
-			], Tile.VCorridor)):
-				update_cell(cell.x, cell.y, Tile.VCorridor)
 		
-		Tile.VCorridor:
-			# Corridoors become crossroads when meeting corridoors of the other orientation
-			if(cell.has_neighbour([
-				[0,0,0],
-				[1,0,1],
-				[0,0,0]
-			], Tile.HCorridor)):
-				update_cell(cell.x, cell.y, Tile.Crossroads)
-		
-		Tile.HCorridor:
-			# Corridoors become crossroads when meeting corridoors of the other orientation
-			if(cell.has_neighbour([
-				[0,1,0],
-				[0,0,0],
-				[0,1,0]
-			], Tile.VCorridor)):
-				update_cell(cell.x, cell.y, Tile.Crossroads)
+		Tile.Crossroads:
+			if(cell.has_any_neighbour(Tile.Floor) or cell.has_any_neighbour(Tile.Pit)):
+				update_cell(cell.x, cell.y, Tile.Pit)
+			if(cell.count_neighbours(VON_NEUMANN, Tile.Wall) > 2):
+				update_cell(cell.x, cell.y, Tile.Wall)
 
 func flip_array_v(array):
 	var tempTop = array.pop_front()
