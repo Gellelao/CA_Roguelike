@@ -2,7 +2,7 @@ extends Node2D
 
 #CA Stuff
 const NUMBER_OF_ORIGINS = 4
-const ITERATIONS = 10
+const ITERATIONS = 2
 const GENERATION_WAIT_TIME = 0.5
 const VON_NEUMANN = [
 	[0,1,0],
@@ -13,8 +13,12 @@ const VON_NEUMANN = [
 # Level stuff
 const TILE_SIZE = 8
 const LEVEL_SIZE = 15 # Levels are square
+const NUMBER_OF_SHIFTERS = 10
+const ShifterScene = preload("res://Scenes/Shifter.tscn")
+var shifters = []
 
-enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads}
+enum Direction {North, South, West, East}
+enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Shifter}
 var map = []
 
 onready var tile_map = $TileMap
@@ -57,7 +61,7 @@ class Cell extends Reference:
 	# 0 = Don't consider this neighbour
 	# 1 = Do consider this neighbour
 	func surrounded_by(typeSurroundedBy):
-		return has_neighbours([
+		return has_all_neighbours([
 			[1, 1, 1],
 			[1, 0, 1],
 			[1, 1, 1]
@@ -74,20 +78,17 @@ class Cell extends Reference:
 		var count = 0
 		var neighbours = get_neighbours()
 		for i in range(3):
-			var row = [];
 			for j in range(3):
-				row.append(neighbours[i][j].type)
 				if(i*j == 1): continue
 				if(neighboursToCheck[j][i] != 1): continue
 				if(neighbours[i][j].type == typeOfNeighbour): count += 1
-			print(row)
-		print(count)
 		return count
 	
 	# Is at least one neighbour of type 'typeOfNeighbour'
 	func has_any_neighbour(typeOfNeighbour):
 		return has_neighbour([[1,1,1],[1,0,1],[1,1,1]], typeOfNeighbour)
 	
+	# Are any of 'neighboursToCheck' of type 'typeOfNeighbour'
 	func has_neighbour(neighboursToCheck, typeOfNeighbour):
 		var neighbours = get_neighbours()
 		for i in range(3):
@@ -98,7 +99,7 @@ class Cell extends Reference:
 		return false
 	
 	# Are all 'neighboursToCheck' of type 'typeOfNeighbour'
-	func has_neighbours(neighboursToCheck, typeOfNeighbour):
+	func has_all_neighbours(neighboursToCheck, typeOfNeighbour):
 		var neighbours = get_neighbours()
 		for i in range(3):
 			for j in range(3):
@@ -173,6 +174,52 @@ class Cell extends Reference:
 			count += array[i].count(0)
 		return count == 0
 
+
+##============================================================##
+##                                                            ##
+##                      Shifter Class                         ##
+##                                                            ##
+##============================================================##
+class Shifter extends Cell:
+	var direction
+	var sprite
+	
+	func _init(game, x, y, direction).(game, x, y, -1):
+		self.direction = direction
+		sprite = ShifterScene.instance()
+		game.add_child(sprite)
+		update_visuals()
+	
+	func move():
+		print("moving")
+		var wallSymmetries = game.generate_symmetries([[0,1,0],
+													   [0,0,0],
+													   [0,0,0]])
+			
+		if(self.has_neighbour(wallSymmetries[direction], Tile.Floor)):
+			var nextX = x
+			var nextY = y
+			match direction:
+				Direction.North:
+					nextY = clamp(y-1, 0, LEVEL_SIZE-1)
+				Direction.South:
+					nextY = clamp(y+1, 0, LEVEL_SIZE-1)
+				Direction.West:
+					nextX = clamp(x-1, 0, LEVEL_SIZE-1)
+				Direction.East:
+					nextX = clamp(x+1, 0, LEVEL_SIZE-1)
+			if(!game.shifter_at(nextX, nextY)):
+				x = nextX
+				y = nextY
+		else:
+			for i in range(4):
+				if(self.has_neighbour(wallSymmetries[i], Tile.Floor)):
+					direction = i
+					break
+					
+	func update_visuals():
+		sprite.position = Vector2(x, y) * TILE_SIZE
+		
 ##============================================================##
 ##                                                            ##
 ##                      Game functions                        ##
@@ -216,6 +263,7 @@ func build_level():
 					randi() % LEVEL_SIZE/2, (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2]
 	var yQuadrants = [randi() % LEVEL_SIZE/2, randi() % LEVEL_SIZE/2,
 					 (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2, (randi() % LEVEL_SIZE/2) + LEVEL_SIZE/2]
+					
 	# Set some initial seeds for the automata
 	for i in range(NUMBER_OF_ORIGINS):
 		var originX = xQuadrants[i]
@@ -229,6 +277,15 @@ func build_level():
 	for i in range(ITERATIONS):
 		yield(get_tree().create_timer(GENERATION_WAIT_TIME),"timeout") # Add a small wait so we can watch it generate
 		update_automata()
+	
+	# Spawn a shifter
+	for i in range(NUMBER_OF_SHIFTERS):
+		var randX = randi() % LEVEL_SIZE
+		var randY = randi() % LEVEL_SIZE
+		for shifter in shifters:
+			if(shifter.x == randX and shifter.y == randY):
+				continue
+		shifters.append(Shifter.new(self, randX, randY, randi() % 4))
 	
 	# Place the player
 	for x in range(LEVEL_SIZE):
@@ -258,6 +315,10 @@ func try_move(delta):
 		return
 	var x = playerCoords.x + delta.x 
 	var y = playerCoords.y + delta.y
+	
+	# Don't update ANYTHING if you're trying to move into a shifter
+	if(shifter_at(x, y)): return
+	
 	var tile_type = Tile.Wall
 	if x >= 0 && x < LEVEL_SIZE && y >= 0 && y < LEVEL_SIZE:
 		tile_type = map[x][y].type
@@ -274,6 +335,12 @@ func start_cast_destroy():
 
 func update_visuals():
 	player.position = playerCoords * TILE_SIZE
+	for shifter in shifters:
+		shifter.move();
+		shifter.update_visuals()
+		if(shifter.x == playerCoords.x and shifter.y == playerCoords.y):
+			print("Game over!")
+	update_automata()
 
 func update_cell(x, y, type):
 	# We don't update any arrays here because we'll do that once all the processing is done by copying the values from the tilemap
@@ -329,6 +396,10 @@ func generate_symmetries(array):
 	
 	return symmetries
 
+func shifter_at(x, y):
+	for shifter in shifters:
+		if(shifter.x == x and shifter.y == y): return true
+	return false
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
