@@ -18,14 +18,19 @@ const ShifterScene = preload("res://Scenes/Shifter.tscn")
 var shifters = []
 
 enum Direction {North, South, West, East}
-enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Shifter}
+enum Spell {None, Destroy, Summon, Teleport}
+var SpellRanges = [0, 1, 1, 2]
+enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads}
+const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads]
 var map = []
 
 onready var tile_map = $TileMap
 onready var player = $Player
+onready var cursor = $Cursor
 
 var playerCoords
-var playerIsCasting = false;
+var cursorCoords
+var current_spell = Spell.None;
 
 ##============================================================##
 ##                                                            ##
@@ -191,7 +196,6 @@ class Shifter extends Cell:
 		update_visuals()
 	
 	func move():
-		print("moving")
 		var wallSymmetries = game.generate_symmetries([[0,1,0],
 													   [0,0,0],
 													   [0,0,0]])
@@ -219,7 +223,9 @@ class Shifter extends Cell:
 					
 	func update_visuals():
 		sprite.position = Vector2(x, y) * TILE_SIZE
-		
+	
+	func remove():
+		sprite.queue_free()
 ##============================================================##
 ##                                                            ##
 ##                      Game functions                        ##
@@ -229,6 +235,8 @@ func _ready():
 	set_process(true)
 	OS.set_window_size(Vector2(480, 480))
 	randomize()
+	cursor.visible = false;
+	cursor.z_index = 10
 	build_level()
 
 func _input(event):
@@ -243,7 +251,13 @@ func _input(event):
 	elif event.is_action("Down"):
 		handle_input({"move": Vector2(0, 1)})
 	elif event.is_action("Cast_Destroy"):
-		handle_input({"cast": "destroy"})
+		handle_input({"cast": Spell.Destroy})
+	elif event.is_action("Cast_Summon"):
+		handle_input({"cast": Spell.Summon})
+	elif event.is_action("Cast_Teleport"):
+		handle_input({"cast": Spell.Teleport})
+	elif event.is_action("Cancel"):
+		finish_spell()
 
 func build_level():
 	#map.clear()
@@ -305,15 +319,18 @@ func update_automata():
 			map[x][y] = Cell.new(self, x, y, tile_map.get_cell(x, y))
 
 func handle_input(input):
-	if(playerIsCasting):
-		start_cast(input)
-	elif(input.move):
-		try_move(input["move"])
+	if(input.has("move")):
+		if(current_spell != Spell.None):
+			move_cursor(input["move"])
+		else:
+			try_move(input["move"])
+	elif(input.has("cast")):
+		handle_cast(input["cast"])
 
 func try_move(delta):
 	if(playerCoords == null):
 		return
-	var x = playerCoords.x + delta.x 
+	var x = playerCoords.x + delta.x
 	var y = playerCoords.y + delta.y
 	
 	# Don't update ANYTHING if you're trying to move into a shifter
@@ -322,16 +339,52 @@ func try_move(delta):
 	var tile_type = Tile.Wall
 	if x >= 0 && x < LEVEL_SIZE && y >= 0 && y < LEVEL_SIZE:
 		tile_type = map[x][y].type
-	match tile_type:
-		Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads:
-			playerCoords = Vector2(x, y)
+	if(tile_type in WALKABLES):
+		playerCoords = Vector2(x, y)
 	call_deferred("update_visuals")
 
-func start_cast(inp):
-	pass
+func move_cursor(delta):
+	assert(current_spell != Spell.None)
+	var x = clamp(cursorCoords.x + delta.x, 0, LEVEL_SIZE-1)
+	var y = clamp(cursorCoords.y + delta.y, 0, LEVEL_SIZE-1)
+	# Constrain to range of spell
+	x = clamp(x, playerCoords.x-SpellRanges[current_spell], playerCoords.x+SpellRanges[current_spell])
+	y = clamp(y, playerCoords.y-SpellRanges[current_spell], playerCoords.y+SpellRanges[current_spell])
+	cursorCoords = Vector2(x, y)
+	cursor.position = cursorCoords * TILE_SIZE
+
+func handle_cast(spell):
+	if(current_spell != spell):
+		current_spell = spell
+		start_spell()
+	elif(spell != Spell.None):
+		var x = cursorCoords.x
+		var y = cursorCoords.y
+		# Then we must be completing a spell in progress
+		match spell:
+			Spell.Destroy:
+				update_cell(x, y, Tile.Floor)
+				if(shifter_at(x, y)):
+					destroy_shifters(x, y)
+			Spell.Summon:
+				if(map[x][y].type in WALKABLES && !shifter_at(x, y)):
+					update_cell(x, y, Tile.Wall)
+			Spell.Teleport:
+				var tile_type = map[x][y].type
+				if(!tile_type in WALKABLES || shifter_at(x, y)): return
+				playerCoords = Vector2(x, y)
+		finish_spell()
+		call_deferred("update_visuals")
 	
-func start_cast_destroy():
-	pass
+func start_spell():
+	cursorCoords = playerCoords
+	cursor.position = cursorCoords * TILE_SIZE
+	cursor.frame = current_spell-1 # Have to subtract 1 here because the None spell is at index zero
+	cursor.visible = true
+
+func finish_spell():
+	current_spell = Spell.None
+	cursor.visible = false;
 
 func update_visuals():
 	player.position = playerCoords * TILE_SIZE
@@ -400,7 +453,15 @@ func shifter_at(x, y):
 	for shifter in shifters:
 		if(shifter.x == x and shifter.y == y): return true
 	return false
-
+	
+func destroy_shifters(x, y):
+	var toRemove = []
+	for i in range(shifters.size()):
+		if(shifters[i].x == x and shifters[i].y == y):
+			toRemove.append(i)
+			shifters[i].remove()
+	for i in toRemove:
+		shifters.remove(i)
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
