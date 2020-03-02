@@ -2,8 +2,8 @@ extends Node2D
 
 #CA Stuff
 const NUMBER_OF_ORIGINS = 4
-const ITERATIONS = 2
-const GENERATION_WAIT_TIME = 0.5
+const ITERATIONS = 30
+const GENERATION_WAIT_TIME = 0.01
 const VON_NEUMANN = [
 	[0,1,0],
 	[1,0,1],
@@ -17,11 +17,13 @@ const NUMBER_OF_SHIFTERS = 10
 const ShifterScene = preload("res://Scenes/Shifter.tscn")
 var shifters = []
 
+# Phases of level gen
+enum Phase {Halls, SpawnRooms, Doors}
 enum Direction {North, South, West, East}
 enum Spell {None, Destroy, Summon, Teleport}
 var SpellRanges = [0, 1, 1, 2]
-enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads}
-const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads]
+enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, Faceted}
+const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads, Tile.Floor1, Tile.Floor2]
 var map = []
 
 onready var tile_map = $TileMap
@@ -151,6 +153,7 @@ class Cell extends Reference:
 		return failedLayers < numberOfLayers
 	
 	func set_neighbours(tilesToSet, typeToSet):
+		print("setting the nieghbours")
 		for iX in range(3):
 			for iY in range(3):
 				# Not skipping the middle cell because we want to be able to set that too
@@ -159,11 +162,11 @@ class Cell extends Reference:
 				if(tilesToSet[iY][iX] == 1): # Flip x and y here so that creating the tilesToSet array looks as it does in game
 					game.update_cell(x-1+iX, y-1+iY, typeToSet)
 	
-	func set_random_neighbours(possibleCells, minN, maxN, typeToSet):
+	func set_random_neighbours(possibleCells, howMany, typeToSet):
+		print("setting randopm neigbours")
 		var chosenNeighbours = [[0,0,0],[0,0,0],[0,0,0]]
-		var targetN = (randi() % maxN) + minN
 		var cellsChosen = 0
-		while(cellsChosen < targetN):
+		while(cellsChosen < howMany):
 			var randomX = randi() % 3
 			var randomY = randi() % 3
 			if(possibleCells[randomX][randomY] == 1):
@@ -232,8 +235,8 @@ class Shifter extends Cell:
 ##                                                            ##
 ##============================================================##
 func _ready():
-	set_process(true)
-	OS.set_window_size(Vector2(480, 480))
+	#set_process(true)
+	OS.set_window_size(Vector2(544, 544))
 	randomize()
 	cursor.visible = false;
 	cursor.z_index = 10
@@ -259,6 +262,13 @@ func _input(event):
 	elif event.is_action("Cancel"):
 		finish_spell()
 
+#======================
+#                     #
+#                     #
+#     Build Level     #
+#                     #
+#                     #
+#======================
 func build_level():
 	#map.clear()
 	#tile_map.clear()
@@ -267,7 +277,8 @@ func build_level():
 	for x in range(LEVEL_SIZE):
 		map.append([])
 		for y in range(LEVEL_SIZE):
-			var wallCell = Cell.new(self, x, y, Tile.Wall) if (randi() % 2) else Cell.new(self, x, y, Tile.Crossroads)
+			# Randomly set cells to begin with
+			var wallCell = Cell.new(self, x, y, Tile.Wall) if (randi() % 2) else Cell.new(self, x, y, Tile.Floor)
 			# Map keeps track of the data
 			map[x].append(wallCell)
 			# tile_map modifies the game tiles
@@ -290,16 +301,26 @@ func build_level():
 	# DO SOME CELLULAR AUTOMATA
 	for i in range(ITERATIONS):
 		yield(get_tree().create_timer(GENERATION_WAIT_TIME),"timeout") # Add a small wait so we can watch it generate
-		update_automata()
+		update_automata(Phase.Halls)
 	
-	# Spawn a shifter
-	for i in range(NUMBER_OF_SHIFTERS):
-		var randX = randi() % LEVEL_SIZE
-		var randY = randi() % LEVEL_SIZE
-		for shifter in shifters:
-			if(shifter.x == randX and shifter.y == randY):
-				continue
-		shifters.append(Shifter.new(self, randX, randY, randi() % 4))
+	yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
+	update_automata(Phase.SpawnRooms) # Create the holes
+	yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
+	update_automata(Phase.SpawnRooms) # Surround with tile
+	yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
+	update_automata(Phase.SpawnRooms) # Fill in surrounding walls
+	
+	
+	yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
+	update_automata(Phase.Doors) # Fill in surrounding walls
+	# Spawn shifters
+#	for i in range(NUMBER_OF_SHIFTERS):
+#		var randX = randi() % LEVEL_SIZE
+#		var randY = randi() % LEVEL_SIZE
+#		for shifter in shifters:
+#			if(shifter.x == randX and shifter.y == randY):
+#				continue
+#		shifters.append(Shifter.new(self, randX, randY, randi() % 4))
 	
 	# Place the player
 	for x in range(LEVEL_SIZE):
@@ -309,11 +330,20 @@ func build_level():
 	
 	call_deferred("update_visuals")
 
-func update_automata():
+func update_automata(phase):
 	for x in range(LEVEL_SIZE):
 			for y in range(LEVEL_SIZE):
-				apply_rules(map[x][y])
+				match phase:
+					Phase.Halls:
+						apply_hall_rules(map[x][y])
+					Phase.SpawnRooms:
+						spawn_rooms(map[x][y])
+					Phase.Doors:
+						add_doors(map[x][y])
 	# copy the tiles into the map array now that all cells have decided their next state
+	update_map()
+	
+func update_map():
 	for x in range(LEVEL_SIZE):
 		for y in range(LEVEL_SIZE):
 			map[x][y] = Cell.new(self, x, y, tile_map.get_cell(x, y))
@@ -393,26 +423,104 @@ func update_visuals():
 		shifter.update_visuals()
 		if(shifter.x == playerCoords.x and shifter.y == playerCoords.y):
 			print("Game over!")
-	update_automata()
+	#update_automata()
+	update_map()
 
 func update_cell(x, y, type):
 	# We don't update any arrays here because we'll do that once all the processing is done by copying the values from the tilemap
 	tile_map.set_cell(x, y, type)
 
-func apply_rules(cell):
+#======================
+#                     #
+#                     #
+#       Rules         #
+#                     #
+#                     #
+#======================
+func apply_hall_rules(cell:Cell):
 	match cell.type:
 		# Within each Match, rules at the top have least priority, as any cells
 		# modified by rules further down will override changes made by rules further up
-		
+		# BUT rules further up do not have the power to affect the CONDITIONS of rules
+		# below, because the map is only updated once all next cells have been decided
 		Tile.Wall:
-			if(cell.count_neighbours(VON_NEUMANN, Tile.Wall) > 2 or cell.count_neighbours(VON_NEUMANN, Tile.Floor) > 1):
+			var nearbyWalls = cell.count_all_neighbours(Tile.Wall)
+			if(nearbyWalls < 2 or nearbyWalls > 4 ):
 				update_cell(cell.x, cell.y, Tile.Floor)
 		
-		Tile.Crossroads:
-			if(cell.has_any_neighbour(Tile.Floor) or cell.has_any_neighbour(Tile.Pit)):
-				update_cell(cell.x, cell.y, Tile.Pit)
-			if(cell.count_neighbours(VON_NEUMANN, Tile.Wall) > 2):
+		Tile.Floor:
+			if(cell.count_all_neighbours(Tile.Wall) == 3):
 				update_cell(cell.x, cell.y, Tile.Wall)
+
+# Gets called 3 times
+func spawn_rooms(cell:Cell):
+	match cell.type:
+		Tile.Floor:
+			if(cell.has_only_neighbours([
+				[1,0,1],
+				[1,0,1],
+				[1,1,1]
+			], Tile.Wall)):
+				update_cell(cell.x, cell.y, Tile.Faceted)
+				cell.set_random_neighbours([
+					[0,1,0],
+					[1,0,1],
+					[0,1,0]
+				], 3, Tile.Faceted)
+			
+			# TODO: Convert these next two into using the array flipping helpers
+			if(cell.has_all_neighbours([
+				[1,1,0],
+				[1,0,0],
+				[1,1,0]
+			], Tile.Wall)):
+				cell.set_neighbours([
+					[0,0,0],
+					[1,0,0],
+					[0,0,0]
+				], Tile.Floor2)
+				
+			if(cell.has_all_neighbours([
+				[0,1,1],
+				[0,0,1],
+				[0,1,1]
+			], Tile.Wall)):
+				cell.set_neighbours([
+					[0,0,0],
+					[0,0,1],
+					[0,0,0]
+				], Tile.Floor2)
+			
+			if(cell.has_neighbour(VON_NEUMANN, Tile.Floor2)):
+				update_cell(cell.x, cell.y, Tile.Floor2)
+				
+			if(cell.has_any_neighbour(Tile.Faceted)):
+				update_cell(cell.x, cell.y, Tile.Floor1)
+			
+			if(cell.has_any_neighbour(Tile.Floor1)):
+				update_cell(cell.x, cell.y, Tile.Wall)
+				
+		Tile.Wall:
+			if(cell.has_any_neighbour(Tile.Faceted)):
+				update_cell(cell.x, cell.y, Tile.Floor1)
+		
+
+func add_doors(cell:Cell):
+	match cell.type:
+		
+		Tile.Wall:
+			var inside = generate_symmetries([[0,0,0],[0,0,0],[0,1,0]])
+			var outside = generate_symmetries([[0,1,0],[0,0,0],[0,0,0]])
+			for i in range(4):
+				if( cell.has_only_neighbours(outside[i], Tile.Floor) && 
+					cell.has_neighbour(inside[i], Tile.Floor1)):
+						update_cell(cell.x, cell.y, Tile.Crossroads)
+		
+		Tile.Floor2:
+			var rowOfThree = generate_symmetries([[1,1,1],[0,0,0],[0,0,0]])
+			for i in range(4):
+				if(cell.has_all_neighbours(rowOfThree[i], Tile.Floor2)):
+					update_cell(cell.x, cell.y, Tile.Pit)
 
 func flip_array_v(array):
 	var tempTop = array.pop_front()
