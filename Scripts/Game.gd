@@ -303,15 +303,13 @@ func build_level():
 		yield(get_tree().create_timer(GENERATION_WAIT_TIME),"timeout") # Add a small wait so we can watch it generate
 		update_automata(Phase.Halls)
 	
-	yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
+	#yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
 	update_automata(Phase.SpawnRooms) # Create the holes
-	yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
+	#yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
 	update_automata(Phase.SpawnRooms) # Surround with tile
-	yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
+	#yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
 	update_automata(Phase.SpawnRooms) # Fill in surrounding walls
 	
-	
-	yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
 	update_automata(Phase.Doors) # Fill in surrounding walls
 	# Spawn shifters
 #	for i in range(NUMBER_OF_SHIFTERS):
