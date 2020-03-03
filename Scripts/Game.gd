@@ -19,7 +19,7 @@ var shifters = []
 
 # Phases of level gen
 enum Phase {Halls, SpawnRooms, Doors}
-enum Direction {North, South, West, East}
+enum Direction {North, South, East, West}
 enum Spell {None, Destroy, Summon, Teleport}
 var SpellRanges = [0, 1, 1, 2]
 enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, Faceted}
@@ -190,6 +190,7 @@ class Cell extends Reference:
 ##============================================================##
 class Shifter extends Cell:
 	var direction
+	var directionICameFrom # To prevent oscillating in one corridor
 	var sprite
 	
 	func _init(game, x, y, direction).(game, x, y, -1):
@@ -199,33 +200,81 @@ class Shifter extends Cell:
 		update_visuals()
 	
 	func move():
-		var wallSymmetries = game.generate_symmetries([[0,1,0],
-													   [0,0,0],
-													   [0,0,0]])
-			
-		if(self.has_neighbour(wallSymmetries[direction], Tile.Floor)):
-			var nextX = x
-			var nextY = y
-			match direction:
-				Direction.North:
-					nextY = clamp(y-1, 0, LEVEL_SIZE-1)
-				Direction.South:
-					nextY = clamp(y+1, 0, LEVEL_SIZE-1)
-				Direction.West:
-					nextX = clamp(x-1, 0, LEVEL_SIZE-1)
-				Direction.East:
-					nextX = clamp(x+1, 0, LEVEL_SIZE-1)
-			if(!game.shifter_at(nextX, nextY)):
-				x = nextX
-				y = nextY
+		var nextX = x
+		var nextY = y
+		print("I'm at ", x, ", ", y, ", facing ", direction, " (", Direction.keys()[direction], ")")
+		match direction:
+			Direction.North:
+				nextY = clamp(y-1, 0, LEVEL_SIZE-1)
+			Direction.South:
+				nextY = clamp(y+1, 0, LEVEL_SIZE-1)
+			Direction.West:
+				nextX = clamp(x-1, 0, LEVEL_SIZE-1)
+			Direction.East:
+				nextX = clamp(x+1, 0, LEVEL_SIZE-1)
+				
+		if(!game.shifter_at(nextX, nextY) && game.map[nextX][nextY].type in WALKABLES):
+			print("I'm moving to ", nextX, ", ", nextY)
+			x = nextX
+			y = nextY
 		else:
-			for i in range(4):
-				if(self.has_neighbour(wallSymmetries[i], Tile.Floor)):
+			print("I'm looking for a new direction'")
+			directionICameFrom = invert_direction(direction)
+			var wallSymmetries = game.generate_symmetries([[0,1,0],
+														   [0,0,0],
+														   [0,0,0]])
+			var dirsToCheck = []
+			print("direction: ", direction, " (", Direction.keys()[direction], ")")
+			print("directionICameFrom: ", directionICameFrom, " (", Direction.keys()[directionICameFrom], ")")
+			var nextDir = rotate_direction_clockwise(direction)
+			for i in range(3):
+				dirsToCheck.append(nextDir)
+				nextDir = rotate_direction_clockwise(nextDir)
+			if(dirsToCheck.has(directionICameFrom)):
+				dirsToCheck.remove(dirsToCheck.find(directionICameFrom))
+				dirsToCheck.append(directionICameFrom) # Just so we check that last
+			print("dirsToCheck: ", dirsToCheck)
+			for i in dirsToCheck:
+				print("Checking ", i, " (", Direction.keys()[i], ")")
+				if(self.neighbours_are_walkable(wallSymmetries[i])):
 					direction = i
+					print("Found ", direction, " (", Direction.keys()[i], ")")
 					break
-					
+				print("Nope")
+	
+	func neighbours_are_walkable(candidates):
+		var neighbours = get_neighbours()
+		for i in range(3):
+			for j in range(3):
+				if(i*j == 1): continue
+				if(candidates[j][i] != 1): continue
+				if(!neighbours[i][j].type in WALKABLES): return false
+		return true
+	
 	func update_visuals():
 		sprite.position = Vector2(x, y) * TILE_SIZE
+		
+	func rotate_direction_clockwise(direction):
+		match direction:
+			Direction.North:
+				return Direction.East
+			Direction.East:
+				return Direction.South
+			Direction.South:
+				return Direction.West
+			Direction.West:
+				return Direction.North
+	
+	func invert_direction(direction):
+		match direction:
+			Direction.North:
+				return Direction.South
+			Direction.East:
+				return Direction.West
+			Direction.South:
+				return Direction.North
+			Direction.West:
+				return Direction.East
 	
 	func remove():
 		sprite.queue_free()
@@ -311,14 +360,15 @@ func build_level():
 	update_automata(Phase.SpawnRooms) # Fill in surrounding walls
 	
 	update_automata(Phase.Doors) # Fill in surrounding walls
+	
 	# Spawn shifters
-#	for i in range(NUMBER_OF_SHIFTERS):
-#		var randX = randi() % LEVEL_SIZE
-#		var randY = randi() % LEVEL_SIZE
-#		for shifter in shifters:
-#			if(shifter.x == randX and shifter.y == randY):
-#				continue
-#		shifters.append(Shifter.new(self, randX, randY, randi() % 4))
+	for i in range(NUMBER_OF_SHIFTERS):
+		var randX = randi() % LEVEL_SIZE
+		var randY = randi() % LEVEL_SIZE
+		for shifter in shifters:
+			if(shifter.x == randX and shifter.y == randY):
+				continue
+		shifters.append(Shifter.new(self, randX, randY, randi() % 4))
 	
 	# Place the player
 	for x in range(LEVEL_SIZE):
