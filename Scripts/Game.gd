@@ -22,7 +22,7 @@ enum Phase {Halls, SpawnRooms, Doors}
 enum Direction {North, South, East, West}
 enum Spell {None, Destroy, Summon, Teleport}
 var SpellRanges = [0, 1, 1, 2]
-enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, Faceted}
+enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, Faceted, VDoor}
 const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads, Tile.Floor1, Tile.Floor2]
 var map = []
 
@@ -559,7 +559,7 @@ func add_doors(cell:Cell):
 			for i in range(4):
 				if( cell.has_only_neighbours(outside[i], Tile.Floor) && 
 					cell.has_neighbour(inside[i], Tile.Floor1)):
-						update_cell(cell.x, cell.y, Tile.Crossroads)
+						update_cell(cell.x, cell.y, Tile.VDoor)
 		
 		Tile.Floor2:
 			var rowOfThree = generate_symmetries([[1,1,1],[0,0,0],[0,0,0]])
