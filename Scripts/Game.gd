@@ -153,7 +153,6 @@ class Cell extends Reference:
 		return failedLayers < numberOfLayers
 	
 	func set_neighbours(tilesToSet, typeToSet):
-		print("setting the nieghbours")
 		for iX in range(3):
 			for iY in range(3):
 				# Not skipping the middle cell because we want to be able to set that too
@@ -163,7 +162,6 @@ class Cell extends Reference:
 					game.update_cell(x-1+iX, y-1+iY, typeToSet)
 	
 	func set_random_neighbours(possibleCells, howMany, typeToSet):
-		print("setting randopm neigbours")
 		var chosenNeighbours = [[0,0,0],[0,0,0],[0,0,0]]
 		var cellsChosen = 0
 		while(cellsChosen < howMany):
@@ -202,45 +200,34 @@ class Shifter extends Cell:
 	func move():
 		var nextX = x
 		var nextY = y
-		print("I'm at ", x, ", ", y, ", facing ", direction, " (", Direction.keys()[direction], ")")
-		match direction:
-			Direction.North:
-				nextY = clamp(y-1, 0, LEVEL_SIZE-1)
-			Direction.South:
-				nextY = clamp(y+1, 0, LEVEL_SIZE-1)
-			Direction.West:
-				nextX = clamp(x-1, 0, LEVEL_SIZE-1)
-			Direction.East:
-				nextX = clamp(x+1, 0, LEVEL_SIZE-1)
-				
-		if(!game.shifter_at(nextX, nextY) && game.map[nextX][nextY].type in WALKABLES):
-			print("I'm moving to ", nextX, ", ", nextY)
-			x = nextX
-			y = nextY
-		else:
-			print("I'm looking for a new direction'")
-			directionICameFrom = invert_direction(direction)
-			var wallSymmetries = game.generate_symmetries([[0,1,0],
-														   [0,0,0],
-														   [0,0,0]])
-			var dirsToCheck = []
-			print("direction: ", direction, " (", Direction.keys()[direction], ")")
-			print("directionICameFrom: ", directionICameFrom, " (", Direction.keys()[directionICameFrom], ")")
-			var nextDir = rotate_direction_clockwise(direction)
-			for i in range(3):
-				dirsToCheck.append(nextDir)
-				nextDir = rotate_direction_clockwise(nextDir)
-			if(dirsToCheck.has(directionICameFrom)):
-				dirsToCheck.remove(dirsToCheck.find(directionICameFrom))
-				dirsToCheck.append(directionICameFrom) # Just so we check that last
-			print("dirsToCheck: ", dirsToCheck)
-			for i in dirsToCheck:
-				print("Checking ", i, " (", Direction.keys()[i], ")")
-				if(self.neighbours_are_walkable(wallSymmetries[i])):
-					direction = i
-					print("Found ", direction, " (", Direction.keys()[i], ")")
-					break
-				print("Nope")
+		directionICameFrom = invert_direction(direction)
+		var wallSymmetries = game.generate_symmetries([[0,1,0],
+													   [0,0,0],
+													   [0,0,0]])
+		var dirsToCheck = []
+		var nextDir = direction
+		for i in range(4):
+			dirsToCheck.append(nextDir)
+			nextDir = rotate_direction_clockwise(nextDir)
+		if(dirsToCheck.has(directionICameFrom)):
+			dirsToCheck.remove(dirsToCheck.find(directionICameFrom))
+			dirsToCheck.append(directionICameFrom) # Just so we check that last
+		for i in dirsToCheck:
+			if(self.neighbours_are_walkable(wallSymmetries[i]) and !neighbours_are_shifters(wallSymmetries[i])):
+				direction = i
+				match direction:
+					Direction.North:
+						nextY = clamp(y-1, 0, LEVEL_SIZE-1)
+					Direction.South:
+						nextY = clamp(y+1, 0, LEVEL_SIZE-1)
+					Direction.West:
+						nextX = clamp(x-1, 0, LEVEL_SIZE-1)
+					Direction.East:
+						nextX = clamp(x+1, 0, LEVEL_SIZE-1)
+						
+				x = nextX
+				y = nextY
+				break
 	
 	func neighbours_are_walkable(candidates):
 		var neighbours = get_neighbours()
@@ -249,6 +236,16 @@ class Shifter extends Cell:
 				if(i*j == 1): continue
 				if(candidates[j][i] != 1): continue
 				if(!neighbours[i][j].type in WALKABLES): return false
+		return true
+	
+	func neighbours_are_shifters(candidates):
+		var neighbours = get_neighbours()
+		for i in range(3):
+			for j in range(3):
+				if(i*j == 1): continue
+				if(candidates[j][i] != 1): continue
+				for shifter in game.shifters:
+					if(shifter.x != i or shifter.y != j): return false
 		return true
 	
 	func update_visuals():
@@ -466,13 +463,13 @@ func finish_spell():
 
 func update_visuals():
 	player.position = playerCoords * TILE_SIZE
+	update_map()
 	for shifter in shifters:
 		shifter.move();
 		shifter.update_visuals()
 		if(shifter.x == playerCoords.x and shifter.y == playerCoords.y):
 			print("Game over!")
 	#update_automata()
-	update_map()
 
 func update_cell(x, y, type):
 	# We don't update any arrays here because we'll do that once all the processing is done by copying the values from the tilemap
