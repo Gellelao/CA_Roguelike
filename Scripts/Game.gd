@@ -2,7 +2,7 @@ extends Node2D
 
 #CA Stuff
 const NUMBER_OF_ORIGINS = 4
-const ITERATIONS_PER_LEVEL = [10, 25, 20, 15, 10]
+const ITERATIONS_PER_LEVEL = [30, 20, 15, 10, 5]
 const GENERATION_WAIT_TIME = 0.01
 const VON_NEUMANN = [
 	[0,1,0],
@@ -393,7 +393,8 @@ func build_level():
 				
 	if(noLadder or noPit): build_level()
 	
-	call_deferred("update_visuals")
+	# call_deferred("update_visuals") # Don't want this because it moves shifters before you can move
+	player.position = playerCoords * TILE_SIZE # This should achieve the same thing
 
 func update_automata(phase):
 	for x in range(LEVEL_SIZE):
