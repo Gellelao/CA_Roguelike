@@ -2,7 +2,7 @@ extends Node2D
 
 #CA Stuff
 const NUMBER_OF_ORIGINS = 4
-const ITERATIONS = 30
+const ITERATIONS_PER_LEVEL = [10, 25, 20, 15, 10]
 const GENERATION_WAIT_TIME = 0.01
 const VON_NEUMANN = [
 	[0,1,0],
@@ -13,8 +13,9 @@ const VON_NEUMANN = [
 # Level stuff
 const TILE_SIZE = 8
 const LEVEL_SIZE = 15 # Levels are square
-const NUMBER_OF_SHIFTERS = 10
+const SHIFTERS_PER_LEVEL = [5, 8, 12, 15, 20]
 const ShifterScene = preload("res://Scenes/Shifter.tscn")
+var LEVEL_NUMBER = 0
 var shifters = []
 
 # Phases of level gen
@@ -22,8 +23,8 @@ enum Phase {Halls, SpawnRooms, Doors}
 enum Direction {North, South, East, West}
 enum Spell {None, Destroy, Summon, Teleport}
 var SpellRanges = [0, 1, 1, 2]
-enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, Faceted, VDoor}
-const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads, Tile.Floor1, Tile.Floor2]
+enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, Faceted, VDoor, VDoorOpen, Ladder}
+const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads, Tile.Floor1, Tile.Floor2, Tile.Ladder]
 var map = []
 
 onready var tile_map = $TileMap
@@ -33,6 +34,8 @@ onready var cursor = $Cursor
 var playerCoords
 var cursorCoords
 var current_spell = Spell.None;
+
+var no_ladders_yet
 
 ##============================================================##
 ##                                                            ##
@@ -316,8 +319,14 @@ func _input(event):
 #                     #
 #======================
 func build_level():
-	#map.clear()
-	#tile_map.clear()
+	map.clear()
+	tile_map.clear()
+	no_ladders_yet = true;
+	
+	# Clear out shifters, being cautious to call remove on each just cause I don't know exactly how that all works
+	for i in range(shifters.size()):
+		shifters[i].remove()
+	shifters.clear()
 	
 	# Make it all walls
 	for x in range(LEVEL_SIZE):
@@ -345,7 +354,7 @@ func build_level():
 		tile_map.set_cell(originX, originY, floorCell.type)
 	
 	# DO SOME CELLULAR AUTOMATA
-	for i in range(ITERATIONS):
+	for i in range(ITERATIONS_PER_LEVEL[LEVEL_NUMBER]):
 		yield(get_tree().create_timer(GENERATION_WAIT_TIME),"timeout") # Add a small wait so we can watch it generate
 		update_automata(Phase.Halls)
 	
@@ -359,19 +368,30 @@ func build_level():
 	update_automata(Phase.Doors) # Fill in surrounding walls
 	
 	# Spawn shifters
-	for i in range(NUMBER_OF_SHIFTERS):
+	for i in range(SHIFTERS_PER_LEVEL[LEVEL_NUMBER]):
 		var randX = randi() % LEVEL_SIZE
 		var randY = randi() % LEVEL_SIZE
-		for shifter in shifters:
-			if(shifter.x == randX and shifter.y == randY):
-				continue
+		if(map[randX][randY].type == Tile.Ladder): continue # We don't want to spawn shifters on ladders in case that shifter can't move and thus obscures the ladder forever
+		if(shifter_at(randX, randY)): continue # Don't spawn a shifter on top of another one
 		shifters.append(Shifter.new(self, randX, randY, randi() % 4))
 	
 	# Place the player
 	for x in range(LEVEL_SIZE):
 		for y in range(LEVEL_SIZE):
-			if(map[x][y].type == Tile.Floor):
+			if(map[x][y].type == Tile.Floor && !shifter_at(x, y)):
 				playerCoords = Vector2(x, y)
+	
+	# Sanity check - is there a ladder and at least one pit?
+	var noLadder = true;
+	var noPit = true;
+	for x in range(LEVEL_SIZE):
+		for y in range(LEVEL_SIZE):
+			if(map[x][y].type == Tile.Ladder):
+				noLadder = false;
+			if(map[x][y].type == Tile.Pit):
+				noPit = false;
+				
+	if(noLadder or noPit): build_level()
 	
 	call_deferred("update_visuals")
 
@@ -462,8 +482,14 @@ func finish_spell():
 	cursor.visible = false;
 
 func update_visuals():
+		
 	player.position = playerCoords * TILE_SIZE
 	update_map()
+	
+	if(map[playerCoords.x][playerCoords.y].type == Tile.Ladder):
+		go_to_next_level()
+		return
+		
 	for shifter in shifters:
 		shifter.move();
 		shifter.update_visuals()
@@ -474,6 +500,11 @@ func update_visuals():
 func update_cell(x, y, type):
 	# We don't update any arrays here because we'll do that once all the processing is done by copying the values from the tilemap
 	tile_map.set_cell(x, y, type)
+	
+func go_to_next_level():
+	LEVEL_NUMBER += 1
+	if(LEVEL_NUMBER >= 5): print("You Win!")
+	else: build_level()
 
 #======================
 #                     #
@@ -566,6 +597,13 @@ func add_doors(cell:Cell):
 			for i in range(4):
 				if(cell.has_all_neighbours(rowOfThree[i], Tile.Floor2)):
 					update_cell(cell.x, cell.y, Tile.Pit)
+			
+		Tile.Faceted:
+			var surrounding = generate_symmetries([[0,0,0],[1,0,1],[0,1,0]])
+			for i in range(4):
+				if(cell.has_only_neighbours(surrounding[i], Tile.Faceted) and no_ladders_yet):
+					update_cell(cell.x, cell.y, Tile.Ladder)
+					no_ladders_yet = false;
 
 func flip_array_v(array):
 	var tempTop = array.pop_front()
