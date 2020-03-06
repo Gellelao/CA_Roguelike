@@ -23,6 +23,7 @@ enum Phase {Halls, SpawnRooms, Doors}
 enum Direction {North, South, East, West}
 enum Spell {None, Destroy, Summon, Teleport}
 var SpellRanges = [0, 1, 1, 2]
+var mana
 enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, Faceted, VDoor, VDoorOpen, Ladder}
 const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads, Tile.Floor1, Tile.Floor2, Tile.Ladder]
 var map = []
@@ -322,6 +323,7 @@ func build_level():
 	map.clear()
 	tile_map.clear()
 	no_ladders_yet = true;
+	mana = 4
 	
 	# Clear out shifters, being cautious to call remove on each just cause I don't know exactly how that all works
 	for i in range(shifters.size()):
@@ -443,13 +445,35 @@ func move_cursor(delta):
 	assert(current_spell != Spell.None)
 	var x = clamp(cursorCoords.x + delta.x, 0, LEVEL_SIZE-1)
 	var y = clamp(cursorCoords.y + delta.y, 0, LEVEL_SIZE-1)
+	var rangeX = SpellRanges[current_spell]
+	var rangeY = SpellRanges[current_spell]
+	
+	print("________________________")
+	print("x: ", x)
+	print("y: ", y)
+	print("playerCoords.x: ", playerCoords.x)
+	print("playerCoords.y: ", playerCoords.y)
+	print("rangeX: ", rangeX)
+	print("rangeY: ", rangeY)
+	if(x != playerCoords.x and y == playerCoords.y):
+		print("topTrue")
+		rangeY = 0;
+		y = playerCoords.y
+	if(x == playerCoords.x and y != playerCoords.y):
+		print("botTrue")
+		rangeX = 0;
+		x = playerCoords.x
+		
 	# Constrain to range of spell
-	x = clamp(x, playerCoords.x-SpellRanges[current_spell], playerCoords.x+SpellRanges[current_spell])
-	y = clamp(y, playerCoords.y-SpellRanges[current_spell], playerCoords.y+SpellRanges[current_spell])
+	x = clamp(x, playerCoords.x-rangeX, playerCoords.x+rangeX)
+	y = clamp(y, playerCoords.y-rangeY, playerCoords.y+rangeY)
+	
+	
 	cursorCoords = Vector2(x, y)
 	cursor.position = cursorCoords * TILE_SIZE
 
 func handle_cast(spell):
+	if(mana <= 0): return
 	if(current_spell != spell):
 		current_spell = spell
 		start_spell()
@@ -480,6 +504,7 @@ func start_spell():
 
 func finish_spell():
 	current_spell = Spell.None
+	mana -= 1
 	cursor.visible = false;
 
 func update_visuals():
@@ -504,7 +529,7 @@ func update_cell(x, y, type):
 	
 func go_to_next_level():
 	LEVEL_NUMBER += 1
-	if(LEVEL_NUMBER >= 5): print("You Win!")
+	if(LEVEL_NUMBER >= 5): $CanvasLayer/Win.visible = true
 	else: build_level()
 
 #======================
@@ -657,3 +682,10 @@ func destroy_shifters(x, y):
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
+
+
+func _on_Button_pressed():
+	LEVEL_NUMBER = 0
+	build_level()
+	$CanvasLayer/Win.visible = false
+	$CanvasLayer/Home.visible = false
