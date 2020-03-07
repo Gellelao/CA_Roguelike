@@ -19,14 +19,15 @@ const DeathSplash = preload("res://Scenes/DeathSplash.tscn")
 var LEVEL_NUMBER = 0
 var shifters = []
 
-# Phases of level gen
-enum Phase {Halls, SpawnRooms, Doors}
 enum Direction {North, South, East, West}
 enum Spell {None, Destroy, Summon, Teleport}
 var SpellRanges = [0, 1, 1, 2]
 var mana
-enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, Faceted, VDoor, VDoorOpen, Ladder}
-const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads, Tile.Floor1, Tile.Floor2, Tile.Ladder]
+enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, 
+		   Faceted, VDoor, VDoorOpen, Ladder, HDoor, HDoorOpen, Pyramid, Backslash}
+const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads,
+				   Tile.Floor1, Tile.Floor2, Tile.VDoorOpen, Tile.Ladder, Tile.HDoorOpen,
+				   Tile.Backslash]
 var map = []
 
 onready var tile_map = $TileMap
@@ -320,6 +321,8 @@ func _input(event):
 		handle_input({"cast": Spell.Teleport})
 	elif event.is_action("Cancel"):
 		finish_spell()
+	elif event.is_action("Escape"):
+		$CanvasLayer/Escape.visible = true
 
 #======================
 #                     #
@@ -369,16 +372,27 @@ func build_level():
 	# DO SOME CELLULAR AUTOMATA
 	for i in range(ITERATIONS_PER_LEVEL[LEVEL_NUMBER]):
 		yield(get_tree().create_timer(GENERATION_WAIT_TIME),"timeout") # Add a small wait so we can watch it generate
-		update_automata(Phase.Halls)
+		update_automata_make_halls()
+	
+	# Make the corners into crossroads
+	tile_map.set_cell(0, 0, Tile.Crossroads)
+	tile_map.set_cell(0, 14, Tile.Crossroads)
+	tile_map.set_cell(14, 0, Tile.Crossroads)
+	tile_map.set_cell(14, 14, Tile.Crossroads)
+	
+	for i in range(15):
+		update_automata_lay_carpet()
 	
 	#yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
-	update_automata(Phase.SpawnRooms) # Create the holes
+	update_automata_spawn_rooms() # Create the holes
 	#yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
-	update_automata(Phase.SpawnRooms) # Surround with tile
+	update_automata_spawn_rooms() # Surround with tile
 	#yield(get_tree().create_timer(GENERATION_WAIT_TIME*250),"timeout")
-	update_automata(Phase.SpawnRooms) # Fill in surrounding walls
+	update_automata_spawn_rooms() # Fill in surrounding walls
 	
-	update_automata(Phase.Doors) # Fill in surrounding walls
+	update_automata_add_doors()
+	
+	update_automata_rotate_doors()
 	
 	# Spawn shifters
 	for i in range(SHIFTERS_PER_LEVEL[LEVEL_NUMBER]):
@@ -403,25 +417,43 @@ func build_level():
 				noLadder = false;
 			if(map[x][y].type == Tile.Pit):
 				noPit = false;
-				
-	if(noLadder or noPit): build_level()
+	# Retry if not
+	if(noLadder): build_level()
 	
 	# call_deferred("update_visuals") # Don't want this because it moves shifters before you can move
 	player.position = playerCoords * TILE_SIZE # This should achieve the same thing
 
-func update_automata(phase):
+func update_automata_make_halls():
 	for x in range(LEVEL_SIZE):
 			for y in range(LEVEL_SIZE):
-				match phase:
-					Phase.Halls:
-						apply_hall_rules(map[x][y])
-					Phase.SpawnRooms:
-						spawn_rooms(map[x][y])
-					Phase.Doors:
-						add_doors(map[x][y])
+				apply_hall_rules(map[x][y])
+	update_map()
+
+func update_automata_lay_carpet():
+	for x in range(LEVEL_SIZE):
+			for y in range(LEVEL_SIZE):
+				lay_carpet(map[x][y])
+	update_map()
+
+func update_automata_spawn_rooms():
+	for x in range(LEVEL_SIZE):
+			for y in range(LEVEL_SIZE):
+				spawn_rooms(map[x][y])
 	# copy the tiles into the map array now that all cells have decided their next state
 	update_map()
-	
+
+func update_automata_add_doors():
+	for x in range(LEVEL_SIZE):
+			for y in range(LEVEL_SIZE):
+				add_doors(map[x][y])
+	update_map()
+
+func update_automata_rotate_doors():
+	for x in range(LEVEL_SIZE):
+			for y in range(LEVEL_SIZE):
+				rotate_doors(map[x][y])
+	update_map()
+
 func update_map():
 	for x in range(LEVEL_SIZE):
 		for y in range(LEVEL_SIZE):
@@ -450,6 +482,10 @@ func try_move(delta):
 		tile_type = map[x][y].type
 	if(tile_type in WALKABLES):
 		playerCoords = Vector2(x, y)
+	if(tile_type == Tile.VDoor):
+		update_cell(x, y, Tile.VDoorOpen)
+	if(tile_type == Tile.HDoor):
+		update_cell(x, y, Tile.HDoorOpen)
 	call_deferred("update_visuals")
 
 func move_cursor(delta):
@@ -457,7 +493,7 @@ func move_cursor(delta):
 	var x = clamp(cursorCoords.x + delta.x, 0, LEVEL_SIZE-1)
 	var y = clamp(cursorCoords.y + delta.y, 0, LEVEL_SIZE-1)
 	
-	# Doing it this way to ensure that only vardinal directions are allowed
+	# Doing it this way to ensure that only cardinal directions are allowed
 	# While diagonals could be in range, we don't want them so we filter them out as they will not be round numbers like i
 	var distanceFromPlayer = Vector2(x, y).distance_to(playerCoords)
 	var inRange = false
@@ -534,7 +570,9 @@ func update_cell(x, y, type):
 func go_to_next_level():
 	LEVEL_NUMBER += 1
 	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
-	if(LEVEL_NUMBER >= 5): $CanvasLayer/Win.visible = true
+	if(LEVEL_NUMBER >= 5):
+		yield(get_tree().create_timer(0.5),"timeout")
+		$CanvasLayer/Win.visible = true
 	else: build_level()
 
 #======================
@@ -559,10 +597,35 @@ func apply_hall_rules(cell:Cell):
 			if(cell.count_all_neighbours(Tile.Wall) == 3):
 				update_cell(cell.x, cell.y, Tile.Wall)
 
+func lay_carpet(cell:Cell):
+	var directions = generate_symmetries([[0,1,0],[0,0,0],[0,0,0]])
+	match cell.type:
+		Tile.Crossroads:
+			for i in range(4):
+				if( cell.has_neighbour(directions[i], Tile.Floor)):
+					cell.set_neighbours(directions[i], Tile.HCorridor if i > 1 else Tile.VCorridor)
+		
+		Tile.Floor:
+			for i in range(2):
+				if(cell.has_neighbour(directions[i], Tile.VCorridor)):
+					update_cell(cell.x, cell.y, Tile.VCorridor)
+			
+			for i in range(2, 4):
+				if(cell.has_neighbour(directions[i], Tile.HCorridor)):
+					update_cell(cell.x, cell.y, Tile.HCorridor)
+		
+		Tile.VCorridor:
+			if(cell.has_neighbour(VON_NEUMANN, Tile.HCorridor)):
+				update_cell(cell.x, cell.y, Tile.Crossroads)
+		
+		Tile.HCorridor:
+			if(cell.has_neighbour(VON_NEUMANN, Tile.VCorridor)):
+				update_cell(cell.x, cell.y, Tile.Crossroads)
+
 # Gets called 3 times
 func spawn_rooms(cell:Cell):
 	match cell.type:
-		Tile.Floor:
+		Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads:
 			if(cell.has_only_neighbours([
 				[1,0,1],
 				[1,0,1],
@@ -573,7 +636,18 @@ func spawn_rooms(cell:Cell):
 					[0,1,0],
 					[1,0,1],
 					[0,1,0]
-				], 3, Tile.Faceted)
+				], 2, Tile.Faceted)
+			
+			if(cell.has_only_neighbours([
+				[1,1,1],
+				[1,0,1],
+				[1,0,1]
+			], Tile.Wall)):
+				cell.set_neighbours([
+					[0,1,0],
+					[1,1,1],
+					[0,0,0]
+				], Tile.Backslash)
 			
 			# TODO: Convert these next two into using the array flipping helpers
 			if(cell.has_all_neighbours([
@@ -600,17 +674,30 @@ func spawn_rooms(cell:Cell):
 			
 			if(cell.has_neighbour(VON_NEUMANN, Tile.Floor2)):
 				update_cell(cell.x, cell.y, Tile.Floor2)
-				
+			
+			# These next ones are what expand the rooms
 			if(cell.has_any_neighbour(Tile.Faceted)):
 				update_cell(cell.x, cell.y, Tile.Floor1)
 			
 			if(cell.has_any_neighbour(Tile.Floor1)):
 				update_cell(cell.x, cell.y, Tile.Wall)
+			
+			if(cell.has_neighbour(VON_NEUMANN, Tile.Backslash)):
+				update_cell(cell.x, cell.y, Tile.Pyramid)
 				
 		Tile.Wall:
 			if(cell.has_any_neighbour(Tile.Faceted)):
 				update_cell(cell.x, cell.y, Tile.Floor1)
+			
+			if(cell.has_neighbour(VON_NEUMANN, Tile.Backslash)):
+				update_cell(cell.x, cell.y, Tile.Pyramid)
 		
+		Tile.Pyramid:
+			var inside = generate_symmetries([[0,1,0],[0,0,0],[0,0,0]])
+			var outside = generate_symmetries([[0,0,0],[0,0,0],[0,1,0]])
+			for i in range(1, 4):
+				if(cell.has_neighbour(inside[i], Tile.Backslash)):
+					cell.set_neighbours(outside[i], Tile.Pyramid)
 
 func add_doors(cell:Cell):
 	match cell.type:
@@ -627,14 +714,26 @@ func add_doors(cell:Cell):
 			var rowOfThree = generate_symmetries([[1,1,1],[0,0,0],[0,0,0]])
 			for i in range(4):
 				if(cell.has_all_neighbours(rowOfThree[i], Tile.Floor2)):
-					update_cell(cell.x, cell.y, Tile.Pit)
+					update_cell(cell.x, cell.y, Tile.VDoor)
 			
-		Tile.Faceted:
-			var surrounding = generate_symmetries([[0,0,0],[1,0,1],[0,1,0]])
-			for i in range(4):
-				if(cell.has_only_neighbours(surrounding[i], Tile.Faceted) and no_ladders_yet):
-					update_cell(cell.x, cell.y, Tile.Ladder)
-					no_ladders_yet = false;
+		Tile.Floor1:
+			if(cell.count_all_neighbours(Tile.Faceted) >= 3 and no_ladders_yet):
+				update_cell(cell.x, cell.y, Tile.Ladder)
+				no_ladders_yet = false;
+		
+		Tile.Pyramid:
+			var surrounding = [[0,0,0],[1,0,1],[0,0,0]]
+			var below = [[0,0,0],[0,0,0],[0,1,0]]
+			if(cell.has_all_neighbours(surrounding, Tile.Pyramid) and
+			   cell.has_neighbour(below, Tile.Floor)):
+				update_cell(cell.x, cell.y, Tile.VDoor)
+
+func rotate_doors(cell:Cell):
+	match cell.type:
+		Tile.VDoor:
+			var topAndBottom = [[0,1,0],[0,0,0],[0,1,0]]
+			if(cell.has_all_neighbours(topAndBottom, Tile.Wall)):
+				update_cell(cell.x, cell.y, Tile.HDoor)
 
 func flip_array_v(array):
 	var tempTop = array.pop_front()
@@ -689,9 +788,20 @@ func destroy_shifters(x, y):
 #	pass
 
 
-func _on_Button_pressed():
+func _on_StartButton_pressed():
 	LEVEL_NUMBER = 0
 	build_level()
 	$CanvasLayer/Win.visible = false
 	$CanvasLayer/GameOver.visible = false
+	$CanvasLayer/Escape.visible = false
 	$CanvasLayer/Home.visible = false
+
+
+func _on_MenuButton_pressed():
+	$CanvasLayer/Win.visible = false
+	$CanvasLayer/GameOver.visible = false
+	$CanvasLayer/Escape.visible = false
+	$CanvasLayer/Home.visible = true
+
+func _on_NoButton_pressed():
+	$CanvasLayer/Escape.visible = false
