@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://Art/wall.png" type="Texture" id=1]
 [ext_resource path="res://Art/player.png" type="Texture" id=2]
@@ -17,6 +17,8 @@
 [ext_resource path="res://Art/ladder.png" type="Texture" id=15]
 [ext_resource path="res://Art/instructions.png" type="Texture" id=16]
 [ext_resource path="res://Art/title.png" type="Texture" id=17]
+[ext_resource path="res://Art/level.png" type="Texture" id=18]
+[ext_resource path="res://Art/manaOrb.png" type="Texture" id=19]
 
 [sub_resource type="TileSet" id=1]
 0/name = "floor.png 0"
@@ -170,16 +172,45 @@ centered = false
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
-visible = false
-margin_right = 16.0
+[node name="Mana" type="ColorRect" parent="CanvasLayer"]
+margin_right = 24.0
 margin_bottom = 8.0
+rect_clip_content = true
+color = Color( 0.290196, 0.219608, 0.0823529, 0.756863 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="manaOrb" type="Sprite" parent="CanvasLayer/Mana"]
+texture = ExtResource( 19 )
+centered = false
+region_enabled = true
+region_rect = Rect2( 8, 8, 136, 8 )
+region_filter_clip = true
+
+[node name="Level" type="ColorRect" parent="CanvasLayer"]
+margin_top = 128.0
+margin_right = 32.0
+margin_bottom = 136.0
 color = Color( 0.396078, 0.396078, 0.396078, 0.568627 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="LevelWord" type="Sprite" parent="CanvasLayer/Level"]
+texture = ExtResource( 18 )
+centered = false
+
+[node name="LevelValue" type="Label" parent="CanvasLayer/Level"]
+margin_left = 24.0
+margin_right = 32.0
+margin_bottom = 14.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="Win" type="ColorRect" parent="CanvasLayer"]
+visible = false
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 128.0
@@ -197,6 +228,31 @@ margin_bottom = 56.0
 text = "You  Win"
 
 [node name="Button" type="Button" parent="CanvasLayer/Win"]
+margin_left = 32.0
+margin_top = 56.0
+margin_right = 89.0
+margin_bottom = 76.0
+text = "Restart"
+
+[node name="GameOver" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 128.0
+margin_bottom = 128.0
+color = Color( 1, 0.831373, 0.639216, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/GameOver"]
+margin_left = 24.0
+margin_top = 40.0
+margin_right = 104.0
+margin_bottom = 56.0
+text = "Game Over"
+
+[node name="Button" type="Button" parent="CanvasLayer/GameOver"]
 margin_left = 32.0
 margin_top = 56.0
 margin_right = 89.0
@@ -236,4 +292,5 @@ visible = false
 position = Vector2( -40, 32 )
 hframes = 3
 [connection signal="pressed" from="CanvasLayer/Win/Button" to="." method="_on_Button_pressed"]
+[connection signal="pressed" from="CanvasLayer/GameOver/Button" to="." method="_on_Button_pressed"]
 [connection signal="pressed" from="CanvasLayer/Home/Button" to="." method="_on_Button_pressed"]

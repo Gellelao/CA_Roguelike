@@ -15,6 +15,7 @@ const TILE_SIZE = 8
 const LEVEL_SIZE = 15 # Levels are square
 const SHIFTERS_PER_LEVEL = [5, 8, 12, 15, 20]
 const ShifterScene = preload("res://Scenes/Shifter.tscn")
+const DeathSplash = preload("res://Scenes/DeathSplash.tscn")
 var LEVEL_NUMBER = 0
 var shifters = []
 
@@ -194,10 +195,13 @@ class Shifter extends Cell:
 	var direction
 	var directionICameFrom # To prevent oscillating in one corridor
 	var sprite
+	var tween
 	
 	func _init(game, x, y, direction).(game, x, y, -1):
 		self.direction = direction
+		tween = Tween.new()
 		sprite = ShifterScene.instance()
+		sprite.add_child(tween)
 		game.add_child(sprite)
 		update_visuals()
 	
@@ -253,7 +257,11 @@ class Shifter extends Cell:
 		return true
 	
 	func update_visuals():
-		sprite.position = Vector2(x, y) * TILE_SIZE
+		var newPos = Vector2(x, y) * TILE_SIZE
+		tween.interpolate_property(sprite, "position", null, newPos, 0.05, Tween.TRANS_QUAD, 
+							  Tween.EASE_IN_OUT)
+		tween.start()
+		sprite.position = newPos
 		
 	func rotate_direction_clockwise(direction):
 		match direction:
@@ -291,6 +299,7 @@ func _ready():
 	cursor.visible = false;
 	cursor.z_index = 10
 	build_level()
+	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
 
 func _input(event):
 	if !event.is_pressed(): 
@@ -323,7 +332,9 @@ func build_level():
 	map.clear()
 	tile_map.clear()
 	no_ladders_yet = true;
-	mana = 4
+	mana = 3
+	$CanvasLayer/Mana.rect_size = Vector2(mana*8, 8)
+		
 	
 	# Clear out shifters, being cautious to call remove on each just cause I don't know exactly how that all works
 	for i in range(shifters.size()):
@@ -445,30 +456,18 @@ func move_cursor(delta):
 	assert(current_spell != Spell.None)
 	var x = clamp(cursorCoords.x + delta.x, 0, LEVEL_SIZE-1)
 	var y = clamp(cursorCoords.y + delta.y, 0, LEVEL_SIZE-1)
-	var rangeX = SpellRanges[current_spell]
-	var rangeY = SpellRanges[current_spell]
 	
-	print("________________________")
-	print("x: ", x)
-	print("y: ", y)
-	print("playerCoords.x: ", playerCoords.x)
-	print("playerCoords.y: ", playerCoords.y)
-	print("rangeX: ", rangeX)
-	print("rangeY: ", rangeY)
-	if(x != playerCoords.x and y == playerCoords.y):
-		print("topTrue")
-		rangeY = 0;
-		y = playerCoords.y
-	if(x == playerCoords.x and y != playerCoords.y):
-		print("botTrue")
-		rangeX = 0;
-		x = playerCoords.x
+	# Doing it this way to ensure that only vardinal directions are allowed
+	# While diagonals could be in range, we don't want them so we filter them out as they will not be round numbers like i
+	var distanceFromPlayer = Vector2(x, y).distance_to(playerCoords)
+	var inRange = false
+	for i in range(SpellRanges[current_spell]+1):
+		print("dist: ", distanceFromPlayer, ", i: ", i)
+		if(distanceFromPlayer == i): inRange = true
 		
-	# Constrain to range of spell
-	x = clamp(x, playerCoords.x-rangeX, playerCoords.x+rangeX)
-	y = clamp(y, playerCoords.y-rangeY, playerCoords.y+rangeY)
+	if(!inRange): return
 	
-	
+	print("hello?")
 	cursorCoords = Vector2(x, y)
 	cursor.position = cursorCoords * TILE_SIZE
 
@@ -505,6 +504,7 @@ func start_spell():
 func finish_spell():
 	current_spell = Spell.None
 	mana -= 1
+	$CanvasLayer/Mana.rect_size = Vector2(mana*8, 8)
 	cursor.visible = false;
 
 func update_visuals():
@@ -520,7 +520,11 @@ func update_visuals():
 		shifter.move();
 		shifter.update_visuals()
 		if(shifter.x == playerCoords.x and shifter.y == playerCoords.y):
-			print("Game over!")
+			var deathSplash = DeathSplash.instance()
+			player.add_child(deathSplash)
+			yield(get_tree().create_timer(0.5),"timeout")
+			deathSplash.queue_free()
+			$CanvasLayer/GameOver.visible = true
 	#update_automata()
 
 func update_cell(x, y, type):
@@ -529,6 +533,7 @@ func update_cell(x, y, type):
 	
 func go_to_next_level():
 	LEVEL_NUMBER += 1
+	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
 	if(LEVEL_NUMBER >= 5): $CanvasLayer/Win.visible = true
 	else: build_level()
 
@@ -688,4 +693,5 @@ func _on_Button_pressed():
 	LEVEL_NUMBER = 0
 	build_level()
 	$CanvasLayer/Win.visible = false
+	$CanvasLayer/GameOver.visible = false
 	$CanvasLayer/Home.visible = false
