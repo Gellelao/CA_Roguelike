@@ -350,7 +350,7 @@ func build_level():
 	no_ladders_yet = true;
 	mana = 3
 	$CanvasLayer/Mana.rect_size = Vector2(mana*8, 8)
-		
+	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
 	
 	# Clear out shifters, being cautious to call remove on each just cause I don't know exactly how that all works
 	for i in range(shifters.size()):
@@ -512,12 +512,10 @@ func move_cursor(delta):
 	var distanceFromPlayer = Vector2(x, y).distance_to(playerCoords)
 	var inRange = false
 	for i in range(SpellRanges[current_spell]+1):
-		print("dist: ", distanceFromPlayer, ", i: ", i)
 		if(distanceFromPlayer == i): inRange = true
 		
 	if(!inRange): return
 	
-	print("hello?")
 	cursorCoords = Vector2(x, y)
 	cursor.position = cursorCoords * TILE_SIZE
 
@@ -755,13 +753,10 @@ func rotate_doors(cell:Cell):
 		Tile.VDoor:
 			var topAndBottom = [[0,1,0],[0,0,0],[0,1,0]]
 			var topAndBottomCells = cell.get_some_neighbours(topAndBottom)
-			for x in topAndBottomCells:
-				print(Tile.keys()[x.type])
 			var allWalls = true;
 			for neighbour in topAndBottomCells:
 				if(neighbour.type in WALKABLES):
 					allWalls = false
-			print(allWalls)
 			if(!allWalls):
 				update_cell(cell.x, cell.y, Tile.HDoor)
 
