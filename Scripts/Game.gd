@@ -3,7 +3,7 @@ extends Node2D
 #CA Stuff
 const NUMBER_OF_ORIGINS = 4
 const ITERATIONS_PER_LEVEL = [30, 20, 15, 10, 5]
-const GENERATION_WAIT_TIME = 0.01
+const GENERATION_WAIT_TIME = 0.005
 const VON_NEUMANN = [
 	[0,1,0],
 	[1,0,1],
@@ -68,6 +68,18 @@ class Cell extends Reference:
 					neighbours[iX].append(Cell.new(game, x-1+iX, y-1+iY, Tile.Wall)) # Here we assume that tiles outside the grid are walls
 				else:
 					neighbours[iX].append(game.map[x-1+iX][y-1+iY])
+		return neighbours
+	
+	func get_some_neighbours(neighboursToGet):
+		var neighbours = []
+		for iX in range(3):
+			for iY in range(3):
+				if(neighboursToGet[iX][iY] != 1):
+					continue
+				elif(x == 0 and iX == 0 or y == 0 and iY == 0 or x == LEVEL_SIZE-1 and iX == 2 or y == LEVEL_SIZE-1 and iY == 2):
+					continue
+				else:
+					neighbours.append(game.map[x-1+iX][y-1+iY])
 		return neighbours
 	
 	# Neighbour notation:
@@ -296,6 +308,7 @@ class Shifter extends Cell:
 func _ready():
 	#set_process(true)
 	OS.set_window_size(Vector2(544, 544))
+	OS.set_window_title("Get Blocked!")
 	randomize()
 	cursor.visible = false;
 	cursor.z_index = 10
@@ -400,7 +413,8 @@ func build_level():
 		var randY = randi() % LEVEL_SIZE
 		if(map[randX][randY].type == Tile.Ladder): continue # We don't want to spawn shifters on ladders in case that shifter can't move and thus obscures the ladder forever
 		if(shifter_at(randX, randY)): continue # Don't spawn a shifter on top of another one
-		shifters.append(Shifter.new(self, randX, randY, randi() % 4))
+		if(map[randX][randY].type in WALKABLES):
+			shifters.append(Shifter.new(self, randX, randY, randi() % 4))
 	
 	# Place the player
 	for x in range(LEVEL_SIZE):
@@ -627,6 +641,47 @@ func spawn_rooms(cell:Cell):
 	match cell.type:
 		Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads:
 			if(cell.has_only_neighbours([
+				[1,1,1],
+				[1,0,1],
+				[1,0,1]
+			], Tile.Wall)):
+				cell.set_neighbours([
+					[0,1,1],
+					[0,1,1],
+					[0,1,1]
+				], Tile.Backslash)
+			
+			# TODO: Convert these next two into using the array flipping helpers
+			if(cell.has_all_neighbours([
+				[1,1,0],
+				[1,0,0],
+				[1,1,0]
+			], Tile.Wall)):
+				if(cell.x == 0 or cell.x == LEVEL_SIZE-1):
+					update_cell(cell.x, cell.y, Tile.Pit)
+				else: 
+					cell.set_neighbours([
+					[0,0,0],
+					[1,0,0],
+					[0,0,0]
+				], Tile.Floor2)
+				
+			if(cell.has_all_neighbours([
+				[0,1,1],
+				[0,0,1],
+				[0,1,1]
+			], Tile.Wall)):
+				if(cell.x == 0 or cell.x == LEVEL_SIZE-1):
+					update_cell(cell.x, cell.y, Tile.Pit)
+				else: 
+					update_cell(cell.x, cell.y, Tile.VDoor)
+				cell.set_neighbours([
+					[0,0,0],
+					[0,0,1],
+					[0,0,0]
+				], Tile.Floor2)
+				
+			if(cell.has_only_neighbours([
 				[1,0,1],
 				[1,0,1],
 				[1,1,1]
@@ -638,52 +693,18 @@ func spawn_rooms(cell:Cell):
 					[0,1,0]
 				], 2, Tile.Faceted)
 			
-			if(cell.has_only_neighbours([
-				[1,1,1],
-				[1,0,1],
-				[1,0,1]
-			], Tile.Wall)):
-				cell.set_neighbours([
-					[0,1,0],
-					[1,1,1],
-					[0,0,0]
-				], Tile.Backslash)
-			
-			# TODO: Convert these next two into using the array flipping helpers
-			if(cell.has_all_neighbours([
-				[1,1,0],
-				[1,0,0],
-				[1,1,0]
-			], Tile.Wall)):
-				cell.set_neighbours([
-					[0,0,0],
-					[1,0,0],
-					[0,0,0]
-				], Tile.Floor2)
-				
-			if(cell.has_all_neighbours([
-				[0,1,1],
-				[0,0,1],
-				[0,1,1]
-			], Tile.Wall)):
-				cell.set_neighbours([
-					[0,0,0],
-					[0,0,1],
-					[0,0,0]
-				], Tile.Floor2)
-			
 			if(cell.has_neighbour(VON_NEUMANN, Tile.Floor2)):
 				update_cell(cell.x, cell.y, Tile.Floor2)
 			
 			# These next ones are what expand the rooms
+			if(cell.has_neighbour(VON_NEUMANN, Tile.Backslash)):
+				update_cell(cell.x, cell.y, Tile.Pyramid)
+			
 			if(cell.has_any_neighbour(Tile.Faceted)):
 				update_cell(cell.x, cell.y, Tile.Floor1)
 			
 			if(cell.has_any_neighbour(Tile.Floor1)):
 				update_cell(cell.x, cell.y, Tile.Wall)
-			
-			if(cell.has_neighbour(VON_NEUMANN, Tile.Backslash)):
-				update_cell(cell.x, cell.y, Tile.Pyramid)
 				
 		Tile.Wall:
 			if(cell.has_any_neighbour(Tile.Faceted)):
@@ -692,12 +713,12 @@ func spawn_rooms(cell:Cell):
 			if(cell.has_neighbour(VON_NEUMANN, Tile.Backslash)):
 				update_cell(cell.x, cell.y, Tile.Pyramid)
 		
-		Tile.Pyramid:
-			var inside = generate_symmetries([[0,1,0],[0,0,0],[0,0,0]])
-			var outside = generate_symmetries([[0,0,0],[0,0,0],[0,1,0]])
-			for i in range(1, 4):
-				if(cell.has_neighbour(inside[i], Tile.Backslash)):
-					cell.set_neighbours(outside[i], Tile.Pyramid)
+#		Tile.Pyramid:
+#			var inside = generate_symmetries([[0,1,0],[0,0,0],[0,0,0]])
+#			var outside = generate_symmetries([[0,0,0],[0,0,0],[0,1,0]])
+#			for i in range(1, 4):
+#				if(cell.has_neighbour(inside[i], Tile.Backslash)):
+#					cell.set_neighbours(outside[i], Tile.Pyramid)
 
 func add_doors(cell:Cell):
 	match cell.type:
@@ -706,15 +727,16 @@ func add_doors(cell:Cell):
 			var inside = generate_symmetries([[0,0,0],[0,0,0],[0,1,0]])
 			var outside = generate_symmetries([[0,1,0],[0,0,0],[0,0,0]])
 			for i in range(4):
-				if( cell.has_only_neighbours(outside[i], Tile.Floor) && 
-					cell.has_neighbour(inside[i], Tile.Floor1)):
-						update_cell(cell.x, cell.y, Tile.VDoor)
+				for type in WALKABLES:
+					if( cell.has_only_neighbours(outside[i], type) && 
+						cell.has_neighbour(inside[i], Tile.Floor1)):
+							update_cell(cell.x, cell.y, Tile.VDoor)
 		
-		Tile.Floor2:
-			var rowOfThree = generate_symmetries([[1,1,1],[0,0,0],[0,0,0]])
-			for i in range(4):
-				if(cell.has_all_neighbours(rowOfThree[i], Tile.Floor2)):
-					update_cell(cell.x, cell.y, Tile.VDoor)
+#		Tile.Floor2:
+#			var rowOfThree = generate_symmetries([[1,1,1],[0,0,0],[0,0,0]])
+#			for i in range(4):
+#				if(cell.has_all_neighbours(rowOfThree[i], Tile.Floor2)):
+#					update_cell(cell.x, cell.y, Tile.VDoor)
 			
 		Tile.Floor1:
 			if(cell.count_all_neighbours(Tile.Faceted) >= 3 and no_ladders_yet):
@@ -732,7 +754,15 @@ func rotate_doors(cell:Cell):
 	match cell.type:
 		Tile.VDoor:
 			var topAndBottom = [[0,1,0],[0,0,0],[0,1,0]]
-			if(cell.has_all_neighbours(topAndBottom, Tile.Wall)):
+			var topAndBottomCells = cell.get_some_neighbours(topAndBottom)
+			for x in topAndBottomCells:
+				print(Tile.keys()[x.type])
+			var allWalls = true;
+			for neighbour in topAndBottomCells:
+				if(neighbour.type in WALKABLES):
+					allWalls = false
+			print(allWalls)
+			if(!allWalls):
 				update_cell(cell.x, cell.y, Tile.HDoor)
 
 func flip_array_v(array):
