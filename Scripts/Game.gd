@@ -24,7 +24,8 @@ enum Spell {None, Destroy, Summon, Teleport}
 var SpellRanges = [0, 1, 1, 2]
 var mana
 enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, 
-		   Faceted, VDoor, VDoorOpen, Ladder, HDoor, HDoorOpen, Pyramid, Backslash}
+		   Faceted, VDoor, VDoorOpen, Ladder, HDoor, HDoorOpen, Pyramid, Backslash,
+		   LeverOff, LeverOn}
 const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads,
 				   Tile.Floor1, Tile.Floor2, Tile.VDoorOpen, Tile.Ladder, Tile.HDoorOpen,
 				   Tile.Backslash]
@@ -39,6 +40,7 @@ var cursorCoords
 var current_spell = Spell.None;
 
 var no_ladders_yet
+var no_levers_yet
 
 ##============================================================##
 ##                                                            ##
@@ -348,6 +350,7 @@ func build_level():
 	map.clear()
 	tile_map.clear()
 	no_ladders_yet = true;
+	no_levers_yet = true;
 	mana = 3
 	$CanvasLayer/Mana.rect_size = Vector2(mana*8, 8)
 	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
@@ -423,16 +426,7 @@ func build_level():
 				playerCoords = Vector2(x, y)
 	
 	# Sanity check - is there a ladder and at least one pit?
-	var noLadder = true;
-	var noPit = true;
-	for x in range(LEVEL_SIZE):
-		for y in range(LEVEL_SIZE):
-			if(map[x][y].type == Tile.Ladder):
-				noLadder = false;
-			if(map[x][y].type == Tile.Pit):
-				noPit = false;
-	# Retry if not
-	if(noLadder): build_level()
+	if(no_ladders_yet or no_levers_yet): build_level()
 	
 	# call_deferred("update_visuals") # Don't want this because it moves shifters before you can move
 	player.position = playerCoords * TILE_SIZE # This should achieve the same thing
@@ -500,6 +494,9 @@ func try_move(delta):
 		update_cell(x, y, Tile.VDoorOpen)
 	if(tile_type == Tile.HDoor):
 		update_cell(x, y, Tile.HDoorOpen)
+	if(tile_type == Tile.LeverOff):
+		update_cell(x, y, Tile.LeverOn)
+		add_ladder()
 	call_deferred("update_visuals")
 
 func move_cursor(delta):
@@ -735,11 +732,16 @@ func add_doors(cell:Cell):
 #			for i in range(4):
 #				if(cell.has_all_neighbours(rowOfThree[i], Tile.Floor2)):
 #					update_cell(cell.x, cell.y, Tile.VDoor)
-			
 		Tile.Floor1:
 			if(cell.count_all_neighbours(Tile.Faceted) >= 3 and no_ladders_yet):
-				update_cell(cell.x, cell.y, Tile.Ladder)
+				# Don't actually update the cell until lever is pressed, just test that
+				# a ladder will be able to spawn, so the level will be completable
 				no_ladders_yet = false;
+				
+		Tile.Backslash:
+			if(no_levers_yet):
+				update_cell(cell.x, cell.y, Tile.LeverOff)
+				no_levers_yet = false;
 		
 		Tile.Pyramid:
 			var surrounding = [[0,0,0],[1,0,1],[0,0,0]]
@@ -759,6 +761,19 @@ func rotate_doors(cell:Cell):
 					allWalls = false
 			if(!allWalls):
 				update_cell(cell.x, cell.y, Tile.HDoor)
+
+func add_ladder():
+	var cell
+	no_ladders_yet = true
+	for x in range(LEVEL_SIZE):
+			for y in range(LEVEL_SIZE):
+				if(!no_ladders_yet): break
+				cell = map[x][y]
+				match cell.type:
+					Tile.Floor1:
+						if(cell.count_all_neighbours(Tile.Faceted) >= 3):
+							update_cell(cell.x, cell.y, Tile.Ladder)
+							no_ladders_yet = false;
 
 func flip_array_v(array):
 	var tempTop = array.pop_front()
