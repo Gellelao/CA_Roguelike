@@ -15,9 +15,6 @@
 [ext_resource path="res://Art/vDoor.png" type="Texture" id=13]
 [ext_resource path="res://Art/vDoorOpen.png" type="Texture" id=14]
 [ext_resource path="res://Art/ladder.png" type="Texture" id=15]
-[ext_resource path="res://Art/instructions.png" type="Texture" id=16]
-[ext_resource path="res://Art/title.png" type="Texture" id=17]
-[ext_resource path="res://Art/level.png" type="Texture" id=18]
 [ext_resource path="res://Art/manaOrb.png" type="Texture" id=19]
 [ext_resource path="res://Art/hDoorOpen.png" type="Texture" id=20]
 [ext_resource path="res://Art/hDoor.png" type="Texture" id=21]
@@ -25,6 +22,9 @@
 [ext_resource path="res://Art/backslash.png" type="Texture" id=23]
 [ext_resource path="res://Art/switchOn.png" type="Texture" id=24]
 [ext_resource path="res://Art/switchOff.png" type="Texture" id=25]
+[ext_resource path="res://Art/weird.png" type="Texture" id=26]
+[ext_resource path="res://Art/filledPit.png" type="Texture" id=27]
+[ext_resource path="res://Fonts/pixelatedFont.tres" type="DynamicFont" id=28]
 
 [sub_resource type="TileSet" id=1]
 0/name = "floor.png 0"
@@ -35,6 +35,10 @@
 0/tile_mode = 0
 0/occluder_offset = Vector2( 0, 0 )
 0/navigation_offset = Vector2( 0, 0 )
+0/shape_offset = Vector2( 0, 0 )
+0/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+0/shape_one_way = false
+0/shape_one_way_margin = 0.0
 0/shapes = [  ]
 0/z_index = 0
 1/name = "wall.png 1"
@@ -45,6 +49,10 @@
 1/tile_mode = 0
 1/occluder_offset = Vector2( 0, 0 )
 1/navigation_offset = Vector2( 0, 0 )
+1/shape_offset = Vector2( 0, 0 )
+1/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+1/shape_one_way = false
+1/shape_one_way_margin = 0.0
 1/shapes = [  ]
 1/z_index = 0
 2/name = "pit.png 2"
@@ -55,6 +63,10 @@
 2/tile_mode = 0
 2/occluder_offset = Vector2( 0, 0 )
 2/navigation_offset = Vector2( 0, 0 )
+2/shape_offset = Vector2( 0, 0 )
+2/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+2/shape_one_way = false
+2/shape_one_way_margin = 0.0
 2/shapes = [  ]
 2/z_index = 0
 3/name = "hcor.png 3"
@@ -65,6 +77,10 @@
 3/tile_mode = 0
 3/occluder_offset = Vector2( 0, 0 )
 3/navigation_offset = Vector2( 0, 0 )
+3/shape_offset = Vector2( 0, 0 )
+3/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+3/shape_one_way = false
+3/shape_one_way_margin = 0.0
 3/shapes = [  ]
 3/z_index = 0
 4/name = "vcor.png 4"
@@ -75,6 +91,10 @@
 4/tile_mode = 0
 4/occluder_offset = Vector2( 0, 0 )
 4/navigation_offset = Vector2( 0, 0 )
+4/shape_offset = Vector2( 0, 0 )
+4/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+4/shape_one_way = false
+4/shape_one_way_margin = 0.0
 4/shapes = [  ]
 4/z_index = 0
 5/name = "crossroads.png 5"
@@ -85,6 +105,10 @@
 5/tile_mode = 0
 5/occluder_offset = Vector2( 0, 0 )
 5/navigation_offset = Vector2( 0, 0 )
+5/shape_offset = Vector2( 0, 0 )
+5/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+5/shape_one_way = false
+5/shape_one_way_margin = 0.0
 5/shapes = [  ]
 5/z_index = 0
 6/name = "floor_1.png 6"
@@ -95,6 +119,10 @@
 6/tile_mode = 0
 6/occluder_offset = Vector2( 0, 0 )
 6/navigation_offset = Vector2( 0, 0 )
+6/shape_offset = Vector2( 0, 0 )
+6/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+6/shape_one_way = false
+6/shape_one_way_margin = 0.0
 6/shapes = [  ]
 6/z_index = 0
 7/name = "floor_2.png 7"
@@ -105,6 +133,10 @@
 7/tile_mode = 0
 7/occluder_offset = Vector2( 0, 0 )
 7/navigation_offset = Vector2( 0, 0 )
+7/shape_offset = Vector2( 0, 0 )
+7/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+7/shape_one_way = false
+7/shape_one_way_margin = 0.0
 7/shapes = [  ]
 7/z_index = 0
 8/name = "faceted.png 8"
@@ -115,6 +147,10 @@
 8/tile_mode = 0
 8/occluder_offset = Vector2( 0, 0 )
 8/navigation_offset = Vector2( 0, 0 )
+8/shape_offset = Vector2( 0, 0 )
+8/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+8/shape_one_way = false
+8/shape_one_way_margin = 0.0
 8/shapes = [  ]
 8/z_index = 0
 9/name = "vDoor.png 9"
@@ -125,6 +161,10 @@
 9/tile_mode = 0
 9/occluder_offset = Vector2( 0, 0 )
 9/navigation_offset = Vector2( 0, 0 )
+9/shape_offset = Vector2( 0, 0 )
+9/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+9/shape_one_way = false
+9/shape_one_way_margin = 0.0
 9/shapes = [  ]
 9/z_index = 0
 10/name = "vDoorOpen.png 10"
@@ -135,6 +175,10 @@
 10/tile_mode = 0
 10/occluder_offset = Vector2( 0, 0 )
 10/navigation_offset = Vector2( 0, 0 )
+10/shape_offset = Vector2( 0, 0 )
+10/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+10/shape_one_way = false
+10/shape_one_way_margin = 0.0
 10/shapes = [  ]
 10/z_index = 0
 11/name = "stairs.png 11"
@@ -145,6 +189,10 @@
 11/tile_mode = 0
 11/occluder_offset = Vector2( 0, 0 )
 11/navigation_offset = Vector2( 0, 0 )
+11/shape_offset = Vector2( 0, 0 )
+11/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+11/shape_one_way = false
+11/shape_one_way_margin = 0.0
 11/shapes = [  ]
 11/z_index = 0
 12/name = "hDoor.png 12"
@@ -155,6 +203,10 @@
 12/tile_mode = 0
 12/occluder_offset = Vector2( 0, 0 )
 12/navigation_offset = Vector2( 0, 0 )
+12/shape_offset = Vector2( 0, 0 )
+12/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+12/shape_one_way = false
+12/shape_one_way_margin = 0.0
 12/shapes = [  ]
 12/z_index = 0
 13/name = "hDoorOpen.png 13"
@@ -165,6 +217,10 @@
 13/tile_mode = 0
 13/occluder_offset = Vector2( 0, 0 )
 13/navigation_offset = Vector2( 0, 0 )
+13/shape_offset = Vector2( 0, 0 )
+13/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+13/shape_one_way = false
+13/shape_one_way_margin = 0.0
 13/shapes = [  ]
 13/z_index = 0
 14/name = "pyramid.png 14"
@@ -175,6 +231,10 @@
 14/tile_mode = 0
 14/occluder_offset = Vector2( 0, 0 )
 14/navigation_offset = Vector2( 0, 0 )
+14/shape_offset = Vector2( 0, 0 )
+14/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+14/shape_one_way = false
+14/shape_one_way_margin = 0.0
 14/shapes = [  ]
 14/z_index = 0
 15/name = "backslash.png 15"
@@ -185,6 +245,10 @@
 15/tile_mode = 0
 15/occluder_offset = Vector2( 0, 0 )
 15/navigation_offset = Vector2( 0, 0 )
+15/shape_offset = Vector2( 0, 0 )
+15/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+15/shape_one_way = false
+15/shape_one_way_margin = 0.0
 15/shapes = [  ]
 15/z_index = 0
 16/name = "switchOff.png 16"
@@ -195,6 +259,10 @@
 16/tile_mode = 0
 16/occluder_offset = Vector2( 0, 0 )
 16/navigation_offset = Vector2( 0, 0 )
+16/shape_offset = Vector2( 0, 0 )
+16/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+16/shape_one_way = false
+16/shape_one_way_margin = 0.0
 16/shapes = [  ]
 16/z_index = 0
 17/name = "switchOn.png 17"
@@ -205,8 +273,40 @@
 17/tile_mode = 0
 17/occluder_offset = Vector2( 0, 0 )
 17/navigation_offset = Vector2( 0, 0 )
+17/shape_offset = Vector2( 0, 0 )
+17/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+17/shape_one_way = false
+17/shape_one_way_margin = 0.0
 17/shapes = [  ]
 17/z_index = 0
+18/name = "weird.png 18"
+18/texture = ExtResource( 26 )
+18/tex_offset = Vector2( 0, 0 )
+18/modulate = Color( 1, 1, 1, 1 )
+18/region = Rect2( 0, 0, 8, 8 )
+18/tile_mode = 0
+18/occluder_offset = Vector2( 0, 0 )
+18/navigation_offset = Vector2( 0, 0 )
+18/shape_offset = Vector2( 0, 0 )
+18/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+18/shape_one_way = false
+18/shape_one_way_margin = 0.0
+18/shapes = [  ]
+18/z_index = 0
+19/name = "filledPit.png 19"
+19/texture = ExtResource( 27 )
+19/tex_offset = Vector2( 0, 0 )
+19/modulate = Color( 1, 1, 1, 1 )
+19/region = Rect2( 0, 0, 8, 8 )
+19/tile_mode = 0
+19/occluder_offset = Vector2( 0, 0 )
+19/navigation_offset = Vector2( 0, 0 )
+19/shape_offset = Vector2( 0, 0 )
+19/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+19/shape_one_way = false
+19/shape_one_way_margin = 0.0
+19/shapes = [  ]
+19/z_index = 0
 
 [node name="Game" type="Node2D"]
 script = ExtResource( 4 )
@@ -215,7 +315,7 @@ script = ExtResource( 4 )
 tile_set = SubResource( 1 )
 cell_size = Vector2( 8, 8 )
 format = 1
-tile_data = PoolIntArray( 458741, 14, 0, 458742, 15, 0, 524275, 14, 0, 524276, 14, 0, 524277, 14, 0, 458757, 15, 0, 458760, 15, 0, 458761, 15, 0, 458762, 15, 0, 589810, 14, 0, 589811, 14, 0, 589812, 14, 0, 589813, 15, 0, 589814, 14, 0, 655346, 1, 0, 655347, 14, 0, 655348, 15, 0, 655349, 1, 0, 655350, 14, 0, 720882, 1, 0, 720883, 15, 0, 720884, 14, 0, 720885, 1, 0, 720886, 8, 0, 655372, 15, 0, 655373, 15, 0, 655374, 15, 0, 786418, 14, 0, 786419, 15, 0, 786420, 17, 0, 786421, 14, 0, 786422, 1, 0, 786423, 16, 0, 786424, 17, 0, 786425, 16, 0, 786426, 17, 0, 786427, 16, 0, 720902, 15, 0, 720903, 15, 0, 720904, 15, 0, 720905, 15, 0, 720906, 15, 0, 720907, 15, 0, 851955, 15, 0, 851956, 15, 0, 851957, 15, 0, 851958, 1, 0, 851960, 1, 0, 786436, 15, 0, 786437, 15, 0, 917492, 0, 0, 917493, 14, 0, 917494, 14, 0, 983029, 1, 0, 983030, 14, 0, 1048566, 16, 0, 1048567, 16, 0, 1048568, 16, 0, 1048569, 16, 0, 1048570, 16, 0, 1048571, 17, 0 )
+tile_data = PoolIntArray( 393210, 18, 0, 458740, 6, 0, 458741, 14, 0, 458742, 15, 0, 458744, 18, 0, 458745, 18, 0, 458746, 9, 0, 458747, 18, 0, 524275, 14, 0, 524276, 14, 0, 524277, 14, 0, 524280, 18, 0, 524281, 12, 0, 524282, 2, 0, 524283, 12, 0, 458757, 15, 0, 458760, 15, 0, 458761, 15, 0, 458762, 15, 0, 589810, 14, 0, 589811, 14, 0, 589812, 14, 0, 589813, 15, 0, 589814, 14, 0, 589816, 18, 0, 589817, 18, 0, 589818, 9, 0, 589819, 18, 0, 655346, 1, 0, 655347, 14, 0, 655348, 15, 0, 655349, 1, 0, 655350, 14, 0, 655352, 18, 0, 655353, 18, 0, 655354, 18, 0, 655355, 18, 0, 655356, 18, 0, 720882, 1, 0, 720883, 15, 0, 720884, 18, 0, 720885, 1, 0, 720886, 8, 0, 720888, 18, 0, 720889, 18, 0, 655372, 15, 0, 655373, 15, 0, 655374, 15, 0, 786418, 14, 0, 786419, 15, 0, 786420, 17, 0, 786421, 14, 0, 786422, 1, 0, 786423, 16, 0, 786424, 17, 0, 786425, 16, 0, 786426, 17, 0, 786427, 16, 0, 720902, 15, 0, 720903, 15, 0, 720904, 15, 0, 720905, 15, 0, 720906, 15, 0, 720907, 15, 0, 851955, 15, 0, 851956, 15, 0, 851957, 15, 0, 851958, 1, 0, 851960, 1, 0, 851961, 19, 0, 851962, 2, 0, 786436, 15, 0, 786437, 15, 0, 917492, 0, 0, 917493, 14, 0, 917494, 14, 0, 983029, 1, 0, 983030, 14, 0, 1048566, 16, 0, 1048567, 16, 0, 1048568, 16, 0, 1048569, 16, 0, 1048570, 16, 0, 1048571, 17, 0, 1114097, 2, 0, 1114098, 2, 0, 1114099, 2, 0, 1179636, 2, 0, 1179637, 2, 0, 1179638, 2, 0, 1179639, 2, 0, 1179640, 2, 0, 1179641, 2, 0, 1245178, 2, 0, 1245179, 2, 0, 1245180, 2, 0, 1245181, 2, 0, 1310716, 2, 0, 1376252, 2, 0, 1441791, 2, 0, 1507326, 2, 0, 1507327, 2, 0, 1572861, 2, 0, 1572862, 2, 0, 1638394, 2, 0, 1638395, 2, 0, 1638396, 2, 0, 1703928, 2, 0, 1703929, 2, 0 )
 
 [node name="OuterWall" type="TileMap" parent="."]
 tile_set = SubResource( 1 )
@@ -264,14 +364,20 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="LevelWord" type="Sprite" parent="CanvasLayer/Level"]
-texture = ExtResource( 18 )
-centered = false
+[node name="LevelWord" type="Label" parent="CanvasLayer/Level"]
+margin_right = 40.0
+margin_bottom = 14.0
+custom_fonts/font = ExtResource( 28 )
+text = "LEVEL"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="LevelValue" type="Label" parent="CanvasLayer/Level"]
 margin_left = 24.0
 margin_right = 32.0
 margin_bottom = 14.0
+custom_fonts/font = ExtResource( 28 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -287,26 +393,49 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="WinTiles" type="TileMap" parent="CanvasLayer/Win"]
+position = Vector2( -8, -8 )
+tile_set = SubResource( 1 )
+cell_size = Vector2( 8, 8 )
+format = 1
+tile_data = PoolIntArray( -1, 1, 0, -65536, 1, 0, -65535, 1, 0, -65534, 1, 0, -65533, 1, 0, -65532, 1, 0, -65531, 1, 0, -65530, 1, 0, -65529, 1, 0, -65528, 1, 0, -65527, 1, 0, -65526, 1, 0, -65525, 1, 0, -65524, 1, 0, -65523, 1, 0, -65522, 1, 0, -65521, 1, 0, 65535, 1, 0, 131071, 1, 0, 65537, 4, 0, 65538, 2, 0, 65539, 2, 0, 65540, 2, 0, 65541, 2, 0, 65542, 2, 0, 65543, 2, 0, 65544, 2, 0, 65545, 2, 0, 65546, 2, 0, 65547, 2, 0, 65548, 2, 0, 65549, 2, 0, 65550, 2, 0, 65551, 4, 0, 196607, 1, 0, 131073, 4, 0, 131074, 2, 0, 131075, 8, 0, 131076, 8, 0, 131077, 8, 0, 131078, 8, 0, 131079, 8, 0, 131080, 8, 0, 131081, 8, 0, 131082, 8, 0, 131083, 8, 0, 131084, 8, 0, 131085, 8, 0, 131086, 2, 0, 131087, 4, 0, 262143, 1, 0, 196609, 4, 0, 196610, 2, 0, 196611, 8, 0, 196612, 8, 0, 196613, 8, 0, 196614, 8, 0, 196615, 8, 0, 196616, 8, 0, 196617, 8, 0, 196618, 8, 0, 196619, 8, 0, 196620, 8, 0, 196621, 8, 0, 196622, 2, 0, 196623, 4, 0, 327679, 1, 0, 262145, 4, 0, 262146, 2, 0, 262147, 8, 0, 262148, 8, 0, 262149, 5, 0, 262150, 3, 0, 262151, 3, 0, 262152, 3, 0, 262153, 3, 0, 262154, 3, 0, 262155, 5, 0, 262156, 8, 0, 262157, 8, 0, 262158, 2, 0, 262159, 4, 0, 393215, 1, 0, 327681, 4, 0, 327682, 2, 0, 327683, 8, 0, 327684, 8, 0, 327685, 4, 0, 327686, 3, 0, 327687, 3, 0, 327688, 3, 0, 327689, 3, 0, 327690, 3, 0, 327691, 4, 0, 327692, 8, 0, 327693, 8, 0, 327694, 2, 0, 327695, 4, 0, 458751, 1, 0, 393217, 4, 0, 393218, 2, 0, 393219, 8, 0, 393220, 8, 0, 393221, 5, 0, 393222, 3, 0, 393223, 3, 0, 393224, 3, 0, 393225, 3, 0, 393226, 3, 0, 393227, 5, 0, 393228, 8, 0, 393229, 8, 0, 393230, 2, 0, 393231, 4, 0, 524287, 1, 0, 458753, 4, 0, 458754, 2, 0, 458755, 8, 0, 458756, 8, 0, 458757, 8, 0, 458758, 8, 0, 458759, 8, 0, 458760, 8, 0, 458761, 8, 0, 458762, 8, 0, 458763, 8, 0, 458764, 8, 0, 458765, 8, 0, 458766, 2, 0, 458767, 4, 0, 589823, 1, 0, 524289, 4, 0, 524290, 2, 0, 524291, 8, 0, 524292, 8, 0, 524293, 8, 0, 524294, 8, 0, 524295, 8, 0, 524296, 8, 0, 524297, 8, 0, 524298, 8, 0, 524299, 8, 0, 524300, 8, 0, 524301, 8, 0, 524302, 2, 0, 524303, 4, 0, 655359, 1, 0, 589825, 4, 0, 589826, 2, 0, 589827, 2, 0, 589828, 2, 0, 589829, 2, 0, 589830, 2, 0, 589831, 2, 0, 589832, 2, 0, 589833, 2, 0, 589834, 2, 0, 589835, 2, 0, 589836, 2, 0, 589837, 2, 0, 589838, 2, 0, 589839, 4, 0, 720895, 1, 0, 655361, 4, 0, 655362, 4, 0, 655363, 4, 0, 655364, 1, 0, 655365, 1, 0, 655366, 1, 0, 655367, 1, 0, 655368, 1, 0, 655369, 1, 0, 655370, 1, 0, 655371, 1, 0, 655372, 1, 0, 655373, 4, 0, 655374, 4, 0, 655375, 4, 0, 786431, 1, 0, 720897, 4, 0, 720898, 4, 0, 720899, 4, 0, 720900, 1, 0, 720901, 1, 0, 720902, 3, 0, 720903, 3, 0, 720904, 3, 0, 720905, 3, 0, 720906, 3, 0, 720907, 1, 0, 720908, 1, 0, 720909, 4, 0, 720910, 4, 0, 720911, 4, 0, 851967, 1, 0, 786433, 4, 0, 786434, 4, 0, 786435, 4, 0, 786436, 1, 0, 786437, 1, 0, 786438, 1, 0, 786439, 1, 0, 786440, 1, 0, 786441, 1, 0, 786442, 1, 0, 786443, 1, 0, 786444, 1, 0, 786445, 4, 0, 786446, 4, 0, 786447, 4, 0, 917503, 1, 0, 851969, 4, 0, 851970, 4, 0, 851971, 4, 0, 851972, 1, 0, 851973, 1, 0, 851974, 1, 0, 851975, 1, 0, 851976, 1, 0, 851977, 1, 0, 851978, 1, 0, 851979, 1, 0, 851980, 1, 0, 851981, 4, 0, 851982, 4, 0, 851983, 4, 0, 983039, 1, 0, 917505, 4, 0, 917506, 4, 0, 917507, 4, 0, 917508, 1, 0, 917509, 1, 0, 917510, 3, 0, 917511, 3, 0, 917512, 3, 0, 917513, 3, 0, 917514, 3, 0, 917515, 1, 0, 917516, 1, 0, 917517, 4, 0, 917518, 4, 0, 917519, 4, 0, 1048575, 1, 0, 983041, 4, 0, 983042, 4, 0, 983043, 4, 0, 983044, 1, 0, 983045, 1, 0, 983046, 1, 0, 983047, 1, 0, 983048, 1, 0, 983049, 1, 0, 983050, 1, 0, 983051, 1, 0, 983052, 1, 0, 983053, 4, 0, 983054, 4, 0, 983055, 4, 0 )
+
 [node name="Message" type="RichTextLabel" parent="CanvasLayer/Win"]
-margin_left = 32.0
-margin_top = 40.0
-margin_right = 112.0
-margin_bottom = 56.0
-text = "You  Win"
+margin_left = 46.0
+margin_top = 32.0
+margin_right = 86.0
+margin_bottom = 48.0
+custom_fonts/normal_font = ExtResource( 28 )
+text = "YOU WIN !"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="RestartButton" type="Button" parent="CanvasLayer/Win"]
-margin_left = 32.0
-margin_top = 56.0
-margin_right = 89.0
-margin_bottom = 76.0
-text = "Restart"
+margin_left = 34.0
+margin_top = 74.0
+margin_right = 91.0
+margin_bottom = 94.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "RESTART"
+flat = true
+__meta__ = {
+"_editor_description_": ""
+}
 
 [node name="MenuButton2" type="Button" parent="CanvasLayer/Win"]
-margin_left = 32.0
-margin_top = 80.0
-margin_right = 88.0
-margin_bottom = 100.0
-text = "Menu"
+margin_left = 38.0
+margin_top = 98.0
+margin_right = 86.0
+margin_bottom = 118.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "MENU"
+flat = true
+__meta__ = {
+"_editor_description_": ""
+}
 
 [node name="GameOver" type="ColorRect" parent="CanvasLayer"]
 visible = false
@@ -314,31 +443,51 @@ margin_left = 8.0
 margin_top = 8.0
 margin_right = 128.0
 margin_bottom = 128.0
-color = Color( 1, 0.831373, 0.639216, 1 )
+color = Color( 0, 0, 0, 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="GameOverTiles" type="TileMap" parent="CanvasLayer/GameOver"]
+position = Vector2( -8, -8 )
+tile_set = SubResource( 1 )
+cell_size = Vector2( 8, 8 )
+format = 1
+tile_data = PoolIntArray( -1, 1, 0, -65536, 1, 0, -65535, 1, 0, -65534, 1, 0, -65533, 1, 0, -65532, 1, 0, -65531, 1, 0, -65530, 1, 0, -65529, 1, 0, -65528, 1, 0, -65527, 1, 0, -65526, 1, 0, -65525, 1, 0, -65524, 1, 0, -65523, 1, 0, -65522, 1, 0, -65521, 1, 0, 65535, 1, 0, 131071, 1, 0, 65537, 4, 0, 65538, 4, 0, 65539, 4, 0, 65540, 4, 0, 65541, 4, 0, 65542, 4, 0, 65543, 4, 0, 65544, 4, 0, 65545, 4, 0, 65546, 4, 0, 65547, 4, 0, 65548, 4, 0, 65549, 4, 0, 65550, 4, 0, 65551, 4, 0, 196607, 1, 0, 131073, 4, 0, 131074, 4, 0, 131075, 4, 0, 131076, 4, 0, 131077, 4, 0, 131078, 4, 0, 131079, 4, 0, 131080, 4, 0, 131081, 4, 0, 131082, 4, 0, 131083, 4, 0, 131084, 4, 0, 131085, 4, 0, 131086, 4, 0, 131087, 4, 0, 262143, 1, 0, 196609, 4, 0, 196610, 4, 0, 196611, 4, 0, 196612, 3, 0, 196613, 3, 0, 196614, 3, 0, 196615, 3, 0, 196616, 3, 0, 196617, 3, 0, 196618, 3, 0, 196619, 3, 0, 196620, 3, 0, 196621, 4, 0, 196622, 4, 0, 196623, 4, 0, 327679, 1, 0, 262145, 4, 0, 262146, 4, 0, 262147, 4, 0, 262148, 8, 0, 262149, 8, 0, 262150, 8, 0, 262151, 8, 0, 262152, 8, 0, 262153, 8, 0, 262154, 8, 0, 262155, 8, 0, 262156, 8, 0, 262157, 4, 0, 262158, 4, 0, 262159, 4, 0, 393215, 1, 0, 327681, 4, 0, 327682, 4, 0, 327683, 4, 0, 327684, 8, 0, 327685, 0, 0, 327686, 0, 0, 327687, 0, 0, 327688, 0, 0, 327689, 0, 0, 327690, 0, 0, 327691, 0, 0, 327692, 8, 0, 327693, 4, 0, 327694, 4, 0, 327695, 4, 0, 458751, 1, 0, 393217, 4, 0, 393218, 4, 0, 393219, 4, 0, 393220, 8, 0, 393221, 3, 0, 393222, 3, 0, 393223, 3, 0, 393224, 3, 0, 393225, 3, 0, 393226, 3, 0, 393227, 3, 0, 393228, 8, 0, 393229, 4, 0, 393230, 4, 0, 393231, 4, 0, 524287, 1, 0, 458753, 4, 0, 458754, 4, 0, 458755, 4, 0, 458756, 8, 0, 458757, 0, 0, 458758, 0, 0, 458759, 0, 0, 458760, 0, 0, 458761, 0, 0, 458762, 0, 0, 458763, 0, 0, 458764, 8, 0, 458765, 4, 0, 458766, 4, 0, 458767, 4, 0, 589823, 1, 0, 524289, 4, 0, 524290, 4, 0, 524291, 4, 0, 524292, 8, 0, 524293, 8, 0, 524294, 8, 0, 524295, 8, 0, 524296, 8, 0, 524297, 8, 0, 524298, 8, 0, 524299, 8, 0, 524300, 8, 0, 524301, 4, 0, 524302, 4, 0, 524303, 4, 0, 655359, 1, 0, 589825, 4, 0, 589826, 4, 0, 589827, 4, 0, 589828, 3, 0, 589829, 3, 0, 589830, 3, 0, 589831, 3, 0, 589832, 3, 0, 589833, 3, 0, 589834, 3, 0, 589835, 3, 0, 589836, 3, 0, 589837, 4, 0, 589838, 4, 0, 589839, 4, 0, 720895, 1, 0, 655361, 4, 0, 655362, 4, 0, 655363, 4, 0, 655364, 1, 0, 655365, 1, 0, 655366, 1, 0, 655367, 1, 0, 655368, 1, 0, 655369, 1, 0, 655370, 1, 0, 655371, 1, 0, 655372, 1, 0, 655373, 4, 0, 655374, 4, 0, 655375, 4, 0, 786431, 1, 0, 720897, 4, 0, 720898, 4, 0, 720899, 4, 0, 720900, 1, 0, 720901, 1, 0, 720902, 3, 0, 720903, 3, 0, 720904, 3, 0, 720905, 3, 0, 720906, 3, 0, 720907, 1, 0, 720908, 1, 0, 720909, 4, 0, 720910, 4, 0, 720911, 4, 0, 851967, 1, 0, 786433, 4, 0, 786434, 4, 0, 786435, 4, 0, 786436, 1, 0, 786437, 1, 0, 786438, 1, 0, 786439, 1, 0, 786440, 1, 0, 786441, 1, 0, 786442, 1, 0, 786443, 1, 0, 786444, 1, 0, 786445, 4, 0, 786446, 4, 0, 786447, 4, 0, 917503, 1, 0, 851969, 4, 0, 851970, 4, 0, 851971, 4, 0, 851972, 1, 0, 851973, 1, 0, 851974, 1, 0, 851975, 1, 0, 851976, 1, 0, 851977, 1, 0, 851978, 1, 0, 851979, 1, 0, 851980, 1, 0, 851981, 4, 0, 851982, 4, 0, 851983, 4, 0, 983039, 1, 0, 917505, 4, 0, 917506, 4, 0, 917507, 4, 0, 917508, 1, 0, 917509, 1, 0, 917510, 3, 0, 917511, 3, 0, 917512, 3, 0, 917513, 3, 0, 917514, 3, 0, 917515, 1, 0, 917516, 1, 0, 917517, 4, 0, 917518, 4, 0, 917519, 4, 0, 1048575, 1, 0, 983041, 4, 0, 983042, 4, 0, 983043, 4, 0, 983044, 1, 0, 983045, 1, 0, 983046, 1, 0, 983047, 1, 0, 983048, 1, 0, 983049, 1, 0, 983050, 1, 0, 983051, 1, 0, 983052, 1, 0, 983053, 4, 0, 983054, 4, 0, 983055, 4, 0 )
+
 [node name="Message" type="RichTextLabel" parent="CanvasLayer/GameOver"]
-margin_left = 24.0
+margin_left = 44.0
 margin_top = 40.0
-margin_right = 104.0
+margin_right = 108.0
 margin_bottom = 56.0
-text = "Game Over"
+custom_fonts/normal_font = ExtResource( 28 )
+text = "GAME OVER"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="RestartButton" type="Button" parent="CanvasLayer/GameOver"]
-margin_left = 32.0
-margin_top = 56.0
-margin_right = 89.0
-margin_bottom = 76.0
-text = "Restart"
+margin_left = 40.0
+margin_top = 76.0
+margin_right = 80.0
+margin_bottom = 91.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "RESTART"
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="MenuButton" type="Button" parent="CanvasLayer/GameOver"]
-margin_left = 32.0
-margin_top = 80.0
-margin_right = 88.0
-margin_bottom = 100.0
-text = "Menu"
+margin_left = 44.0
+margin_top = 100.0
+margin_right = 75.0
+margin_bottom = 115.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "MENU"
+flat = true
 
 [node name="Escape" type="ColorRect" parent="CanvasLayer"]
 visible = false
@@ -351,54 +500,141 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="EscapeTiles" type="TileMap" parent="CanvasLayer/Escape"]
+position = Vector2( -8, -8 )
+tile_set = SubResource( 1 )
+cell_size = Vector2( 8, 8 )
+format = 1
+tile_data = PoolIntArray( -1, 1, 0, -65536, 1, 0, -65535, 1, 0, -65534, 1, 0, -65533, 1, 0, -65532, 1, 0, -65531, 1, 0, -65530, 1, 0, -65529, 1, 0, -65528, 1, 0, -65527, 1, 0, -65526, 1, 0, -65525, 1, 0, -65524, 1, 0, -65523, 1, 0, -65522, 1, 0, -65521, 1, 0, 65535, 1, 0, 131071, 1, 0, 65537, 4, 0, 65538, 4, 0, 65539, 4, 0, 65540, 4, 0, 65541, 4, 0, 65542, 4, 0, 65543, 4, 0, 65544, 4, 0, 65545, 4, 0, 65546, 4, 0, 65547, 4, 0, 65548, 4, 0, 65549, 4, 0, 65550, 4, 0, 65551, 4, 0, 196607, 1, 0, 131073, 4, 0, 131074, 4, 0, 131075, 4, 0, 131076, 4, 0, 131077, 4, 0, 131078, 4, 0, 131079, 4, 0, 131080, 4, 0, 131081, 4, 0, 131082, 4, 0, 131083, 4, 0, 131084, 4, 0, 131085, 4, 0, 131086, 4, 0, 131087, 4, 0, 262143, 1, 0, 196609, 4, 0, 196610, 4, 0, 196611, 4, 0, 196612, 3, 0, 196613, 3, 0, 196614, 3, 0, 196615, 3, 0, 196616, 3, 0, 196617, 3, 0, 196618, 3, 0, 196619, 3, 0, 196620, 3, 0, 196621, 4, 0, 196622, 4, 0, 196623, 4, 0, 327679, 1, 0, 262145, 4, 0, 262146, 4, 0, 262147, 4, 0, 262148, 8, 0, 262149, 8, 0, 262150, 8, 0, 262151, 8, 0, 262152, 8, 0, 262153, 8, 0, 262154, 8, 0, 262155, 8, 0, 262156, 8, 0, 262157, 4, 0, 262158, 4, 0, 262159, 4, 0, 393215, 1, 0, 327681, 4, 0, 327682, 4, 0, 327683, 4, 0, 327684, 8, 0, 327685, 0, 0, 327686, 0, 0, 327687, 0, 0, 327688, 0, 0, 327689, 0, 0, 327690, 0, 0, 327691, 0, 0, 327692, 8, 0, 327693, 4, 0, 327694, 4, 0, 327695, 4, 0, 458751, 1, 0, 393217, 4, 0, 393218, 4, 0, 393219, 4, 0, 393220, 8, 0, 393221, 3, 0, 393222, 3, 0, 393223, 3, 0, 393224, 3, 0, 393225, 3, 0, 393226, 3, 0, 393227, 3, 0, 393228, 8, 0, 393229, 4, 0, 393230, 4, 0, 393231, 4, 0, 524287, 1, 0, 458753, 4, 0, 458754, 4, 0, 458755, 4, 0, 458756, 8, 0, 458757, 0, 0, 458758, 0, 0, 458759, 0, 0, 458760, 0, 0, 458761, 0, 0, 458762, 0, 0, 458763, 0, 0, 458764, 8, 0, 458765, 4, 0, 458766, 4, 0, 458767, 4, 0, 589823, 1, 0, 524289, 4, 0, 524290, 4, 0, 524291, 4, 0, 524292, 8, 0, 524293, 8, 0, 524294, 8, 0, 524295, 8, 0, 524296, 8, 0, 524297, 8, 0, 524298, 8, 0, 524299, 8, 0, 524300, 8, 0, 524301, 4, 0, 524302, 4, 0, 524303, 4, 0, 655359, 1, 0, 589825, 4, 0, 589826, 4, 0, 589827, 4, 0, 589828, 3, 0, 589829, 3, 0, 589830, 3, 0, 589831, 3, 0, 589832, 3, 0, 589833, 3, 0, 589834, 3, 0, 589835, 3, 0, 589836, 3, 0, 589837, 4, 0, 589838, 4, 0, 589839, 4, 0, 720895, 1, 0, 655361, 4, 0, 655362, 4, 0, 655363, 4, 0, 655364, 1, 0, 655365, 1, 0, 655366, 1, 0, 655367, 1, 0, 655368, 1, 0, 655369, 1, 0, 655370, 1, 0, 655371, 1, 0, 655372, 1, 0, 655373, 4, 0, 655374, 4, 0, 655375, 4, 0, 786431, 1, 0, 720897, 4, 0, 720898, 4, 0, 720899, 4, 0, 720900, 1, 0, 720901, 1, 0, 720902, 3, 0, 720903, 3, 0, 720904, 3, 0, 720905, 3, 0, 720906, 3, 0, 720907, 1, 0, 720908, 1, 0, 720909, 4, 0, 720910, 4, 0, 720911, 4, 0, 851967, 1, 0, 786433, 4, 0, 786434, 4, 0, 786435, 4, 0, 786436, 1, 0, 786437, 1, 0, 786438, 1, 0, 786439, 1, 0, 786440, 1, 0, 786441, 1, 0, 786442, 1, 0, 786443, 1, 0, 786444, 1, 0, 786445, 4, 0, 786446, 4, 0, 786447, 4, 0, 917503, 1, 0, 851969, 4, 0, 851970, 4, 0, 851971, 4, 0, 851972, 1, 0, 851973, 1, 0, 851974, 1, 0, 851975, 1, 0, 851976, 1, 0, 851977, 1, 0, 851978, 1, 0, 851979, 1, 0, 851980, 1, 0, 851981, 4, 0, 851982, 4, 0, 851983, 4, 0, 983039, 1, 0, 917505, 4, 0, 917506, 4, 0, 917507, 4, 0, 917508, 1, 0, 917509, 1, 0, 917510, 3, 0, 917511, 3, 0, 917512, 3, 0, 917513, 3, 0, 917514, 3, 0, 917515, 1, 0, 917516, 1, 0, 917517, 4, 0, 917518, 4, 0, 917519, 4, 0, 1048575, 1, 0, 983041, 4, 0, 983042, 4, 0, 983043, 4, 0, 983044, 1, 0, 983045, 1, 0, 983046, 1, 0, 983047, 1, 0, 983048, 1, 0, 983049, 1, 0, 983050, 1, 0, 983051, 1, 0, 983052, 1, 0, 983053, 4, 0, 983054, 4, 0, 983055, 4, 0 )
+
 [node name="Message" type="RichTextLabel" parent="CanvasLayer/Escape"]
-margin_left = 16.0
-margin_top = 32.0
-margin_right = 112.0
-margin_bottom = 48.0
-text = "Back to Menu?"
+margin_left = 36.0
+margin_top = 40.0
+margin_right = 100.0
+margin_bottom = 56.0
+custom_fonts/normal_font = ExtResource( 28 )
+text = "BACK TO MENU?"
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
 
 [node name="YesButton" type="Button" parent="CanvasLayer/Escape"]
-margin_left = 32.0
-margin_top = 56.0
-margin_right = 89.0
-margin_bottom = 76.0
-text = "Yes"
+margin_left = 40.0
+margin_top = 74.0
+margin_right = 80.0
+margin_bottom = 94.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "RESTART"
+flat = true
+__meta__ = {
+"_editor_description_": ""
+}
 
 [node name="NoButton" type="Button" parent="CanvasLayer/Escape"]
-margin_left = 32.0
-margin_top = 80.0
-margin_right = 88.0
-margin_bottom = 100.0
-text = "No"
+margin_left = 44.0
+margin_top = 98.0
+margin_right = 75.0
+margin_bottom = 118.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "MENU"
+flat = true
+__meta__ = {
+"_editor_description_": ""
+}
 
 [node name="Home" type="ColorRect" parent="CanvasLayer"]
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 128.0
 margin_bottom = 128.0
+color = Color( 0.329412, 0.305882, 0.407843, 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="instructions" type="Sprite" parent="CanvasLayer/Home"]
-position = Vector2( 57, 88 )
-scale = Vector2( 0.820895, 0.833333 )
-texture = ExtResource( 16 )
-
-[node name="title" type="Sprite" parent="CanvasLayer/Home"]
-position = Vector2( 56, 16 )
-texture = ExtResource( 17 )
+[node name="HomeTiles" type="TileMap" parent="CanvasLayer/Home"]
+position = Vector2( -8, -8 )
+tile_set = SubResource( 1 )
+cell_size = Vector2( 8, 8 )
+format = 1
+tile_data = PoolIntArray( -1, 1, 0, -65536, 1, 0, -65535, 1, 0, -65534, 1, 0, -65533, 1, 0, -65532, 1, 0, -65531, 1, 0, -65530, 1, 0, -65529, 1, 0, -65528, 1, 0, -65527, 1, 0, -65526, 1, 0, -65525, 1, 0, -65524, 1, 0, -65523, 1, 0, -65522, 1, 0, -65521, 1, 0, 65535, 1, 0, 131071, 1, 0, 65537, 4, 0, 65538, 4, 0, 65539, 4, 0, 65540, 8, 0, 65541, 8, 0, 65542, 8, 0, 65543, 8, 0, 65544, 8, 0, 65545, 8, 0, 65546, 8, 0, 65547, 8, 0, 65548, 8, 0, 65549, 4, 0, 65550, 4, 0, 65551, 4, 0, 196607, 1, 0, 131073, 4, 0, 131074, 4, 0, 131075, 4, 0, 131076, 8, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 131080, 0, 0, 131081, 0, 0, 131082, 0, 0, 131083, 0, 0, 131084, 8, 0, 131085, 4, 0, 131086, 4, 0, 131087, 4, 0, 262143, 1, 0, 196609, 4, 0, 196610, 4, 0, 196611, 4, 0, 196612, 8, 0, 196613, 3, 0, 196614, 3, 0, 196615, 3, 0, 196616, 3, 0, 196617, 3, 0, 196618, 3, 0, 196619, 3, 0, 196620, 8, 0, 196621, 4, 0, 196622, 4, 0, 196623, 4, 0, 327679, 1, 0, 262145, 4, 0, 262146, 4, 0, 262147, 4, 0, 262148, 8, 0, 262149, 0, 0, 262150, 0, 0, 262151, 0, 0, 262152, 0, 0, 262153, 0, 0, 262154, 0, 0, 262155, 0, 0, 262156, 8, 0, 262157, 4, 0, 262158, 4, 0, 262159, 4, 0, 393215, 1, 0, 327681, 4, 0, 327682, 4, 0, 327683, 4, 0, 327684, 8, 0, 327685, 8, 0, 327686, 8, 0, 327687, 8, 0, 327688, 8, 0, 327689, 8, 0, 327690, 8, 0, 327691, 8, 0, 327692, 8, 0, 327693, 4, 0, 327694, 4, 0, 327695, 4, 0, 458751, 1, 0, 393217, 4, 0, 393218, 4, 0, 393219, 4, 0, 393220, 0, 0, 393221, 0, 0, 393222, 0, 0, 393223, 0, 0, 393224, 0, 0, 393225, 0, 0, 393226, 0, 0, 393227, 0, 0, 393228, 0, 0, 393229, 4, 0, 393230, 4, 0, 393231, 4, 0, 524287, 1, 0, 458753, 4, 0, 458754, 4, 0, 458755, 4, 0, 458756, 0, 0, 458757, 0, 0, 458758, 0, 0, 458759, 3, 0, 458760, 3, 0, 458761, 3, 0, 458762, 0, 0, 458763, 0, 0, 458764, 0, 0, 458765, 4, 0, 458766, 4, 0, 458767, 4, 0, 589823, 1, 0, 524289, 4, 0, 524290, 4, 0, 524291, 4, 0, 524292, 0, 0, 524293, 0, 0, 524294, 0, 0, 524295, 0, 0, 524296, 0, 0, 524297, 0, 0, 524298, 0, 0, 524299, 0, 0, 524300, 0, 0, 524301, 4, 0, 524302, 4, 0, 524303, 4, 0, 655359, 1, 0, 589825, 4, 0, 589826, 4, 0, 589827, 18, 0, 589828, 18, 0, 589829, 18, 0, 589830, 18, 0, 589831, 18, 0, 589832, 18, 0, 589833, 18, 0, 589834, 18, 0, 589835, 18, 0, 589836, 18, 0, 589837, 18, 0, 589838, 4, 0, 589839, 4, 0, 720895, 1, 0, 655361, 4, 0, 655362, 4, 0, 655363, 18, 0, 655364, 3, 0, 655365, 3, 0, 655366, 3, 0, 655367, 3, 0, 655368, 3, 0, 655369, 3, 0, 655370, 3, 0, 655371, 3, 0, 655372, 3, 0, 655373, 18, 0, 655374, 4, 0, 655375, 4, 0, 786431, 1, 0, 720897, 4, 0, 720898, 4, 0, 720899, 18, 0, 720900, 0, 0, 720901, 0, 0, 720902, 0, 0, 720903, 0, 0, 720904, 0, 0, 720905, 0, 0, 720906, 0, 0, 720907, 0, 0, 720908, 0, 0, 720909, 18, 0, 720910, 4, 0, 720911, 4, 0, 851967, 1, 0, 786433, 4, 0, 786434, 4, 0, 786435, 18, 0, 786436, 3, 0, 786437, 3, 0, 786438, 3, 0, 786439, 3, 0, 786440, 3, 0, 786441, 3, 0, 786442, 3, 0, 786443, 3, 0, 786444, 3, 0, 786445, 18, 0, 786446, 4, 0, 786447, 4, 0, 917503, 1, 0, 851969, 4, 0, 851970, 4, 0, 851971, 18, 0, 851972, 0, 0, 851973, 0, 0, 851974, 0, 0, 851975, 0, 0, 851976, 0, 0, 851977, 0, 0, 851978, 0, 0, 851979, 0, 0, 851980, 0, 0, 851981, 18, 0, 851982, 4, 0, 851983, 4, 0, 983039, 1, 0, 917505, 4, 0, 917506, 4, 0, 917507, 18, 0, 917508, 3, 0, 917509, 3, 0, 917510, 3, 0, 917511, 3, 0, 917512, 3, 0, 917513, 3, 0, 917514, 3, 0, 917515, 3, 0, 917516, 3, 0, 917517, 18, 0, 917518, 4, 0, 917519, 4, 0, 1048575, 1, 0, 983041, 4, 0, 983042, 4, 0, 983043, 18, 0, 983044, 18, 0, 983045, 18, 0, 983046, 18, 0, 983047, 18, 0, 983048, 18, 0, 983049, 18, 0, 983050, 18, 0, 983051, 18, 0, 983052, 18, 0, 983053, 18, 0, 983054, 4, 0, 983055, 4, 0 )
 
 [node name="StartButton" type="Button" parent="CanvasLayer/Home"]
-margin_left = 32.0
-margin_top = 32.0
-margin_right = 86.0
-margin_bottom = 52.0
-text = "GAME!"
+margin_left = 44.0
+margin_top = 45.0
+margin_right = 76.0
+margin_bottom = 60.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "START"
+flat = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Title" type="Label" parent="CanvasLayer/Home"]
+margin_left = 40.0
+margin_top = 16.0
+margin_right = 85.0
+margin_bottom = 30.0
+custom_fonts/font = ExtResource( 28 )
+text = "GET BLOCKED !"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Instructions1" type="RichTextLabel" parent="CanvasLayer/Home"]
+margin_left = 28.0
+margin_top = 72.0
+margin_right = 84.0
+margin_bottom = 80.0
+size_flags_vertical = 0
+size_flags_stretch_ratio = 0.0
+custom_fonts/mono_font = ExtResource( 28 )
+custom_fonts/normal_font = ExtResource( 28 )
+bbcode_enabled = true
+bbcode_text = "[color=blue]WASD[/color] TO MOVE
+"
+text = "WASD TO MOVE
+"
+scroll_active = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Instructions2" type="RichTextLabel" parent="CanvasLayer/Home"]
+margin_left = 28.0
+margin_top = 88.0
+margin_right = 92.0
+margin_bottom = 96.0
+size_flags_vertical = 0
+size_flags_stretch_ratio = 0.0
+custom_fonts/mono_font = ExtResource( 28 )
+custom_fonts/normal_font = ExtResource( 28 )
+bbcode_enabled = true
+bbcode_text = "[color=green]E[/color] TO SUMMON DOOR"
+text = "E TO SUMMON DOOR"
+scroll_active = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Instructions3" type="RichTextLabel" parent="CanvasLayer/Home"]
+margin_left = 28.0
+margin_top = 104.0
+margin_right = 92.0
+margin_bottom = 112.0
+size_flags_vertical = 0
+size_flags_stretch_ratio = 0.0
+custom_fonts/mono_font = ExtResource( 28 )
+custom_fonts/normal_font = ExtResource( 28 )
+bbcode_enabled = true
+bbcode_text = "[color=maroon]Q[/color] TO CANCEL CAST"
+text = "Q TO CANCEL CAST"
+scroll_active = false
 
 [node name="Cursor" parent="." instance=ExtResource( 11 )]
 visible = false

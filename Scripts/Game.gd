@@ -23,12 +23,13 @@ enum Direction {North, South, East, West}
 enum Spell {None, Destroy, Summon, Teleport}
 var SpellRanges = [0, 1, 1, 2]
 var mana
+var maxMana = 4
 enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, 
 		   Faceted, VDoor, VDoorOpen, Ladder, HDoor, HDoorOpen, Pyramid, Backslash,
-		   LeverOff, LeverOn}
+		   LeverOff, LeverOn, Weird, FilledPit}
 const WALKABLES = [Tile.Floor, Tile.HCorridor, Tile.VCorridor, Tile.Crossroads,
 				   Tile.Floor1, Tile.Floor2, Tile.VDoorOpen, Tile.Ladder, Tile.HDoorOpen,
-				   Tile.Backslash]
+				   Tile.Backslash, Tile.FilledPit]
 var map = []
 
 onready var tile_map = $TileMap
@@ -76,7 +77,7 @@ class Cell extends Reference:
 		var neighbours = []
 		for iX in range(3):
 			for iY in range(3):
-				if(neighboursToGet[iX][iY] != 1):
+				if(neighboursToGet[iY][iX] != 1):
 					continue
 				elif(x == 0 and iX == 0 or y == 0 and iY == 0 or x == LEVEL_SIZE-1 and iX == 2 or y == LEVEL_SIZE-1 and iY == 2):
 					continue
@@ -236,6 +237,12 @@ class Shifter extends Cell:
 			dirsToCheck.remove(dirsToCheck.find(directionICameFrom))
 			dirsToCheck.append(directionICameFrom) # Just so we check that last
 		for i in dirsToCheck:
+			var neighboursInDir = self.get_some_neighbours(wallSymmetries[i])
+			if(neighboursInDir.size() > 0):
+				if(get_some_neighbours(wallSymmetries[i])[0].type == Tile.Pit):
+					set_neighbours(wallSymmetries[i], Tile.FilledPit)
+					game.destroy_shifters(x, y)
+					return
 			if(self.neighbours_are_walkable(wallSymmetries[i]) and !neighbours_are_shifters(wallSymmetries[i])):
 				direction = i
 				match direction:
@@ -300,7 +307,7 @@ class Shifter extends Cell:
 			Direction.West:
 				return Direction.East
 	
-	func remove():
+	func delete():
 		sprite.queue_free()
 ##============================================================##
 ##                                                            ##
@@ -330,10 +337,6 @@ func _input(event):
 		handle_input({"move": Vector2(0, 1)})
 	elif event.is_action("Cast_Destroy"):
 		handle_input({"cast": Spell.Destroy})
-	elif event.is_action("Cast_Summon"):
-		handle_input({"cast": Spell.Summon})
-	elif event.is_action("Cast_Teleport"):
-		handle_input({"cast": Spell.Teleport})
 	elif event.is_action("Cancel"):
 		finish_spell()
 	elif event.is_action("Escape"):
@@ -351,13 +354,13 @@ func build_level():
 	tile_map.clear()
 	no_ladders_yet = true;
 	no_levers_yet = true;
-	mana = 3
+	mana = maxMana
 	$CanvasLayer/Mana.rect_size = Vector2(mana*8, 8)
 	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
 	
 	# Clear out shifters, being cautious to call remove on each just cause I don't know exactly how that all works
 	for i in range(shifters.size()):
-		shifters[i].remove()
+		shifters[i].delete()
 	shifters.clear()
 	
 	# Make it all walls
@@ -525,18 +528,18 @@ func handle_cast(spell):
 		var x = cursorCoords.x
 		var y = cursorCoords.y
 		# Then we must be completing a spell in progress
-		match spell:
-			Spell.Destroy:
-				update_cell(x, y, Tile.Floor)
-				if(shifter_at(x, y)):
-					destroy_shifters(x, y)
-			Spell.Summon:
-				if(map[x][y].type in WALKABLES && !shifter_at(x, y)):
-					update_cell(x, y, Tile.Wall)
-			Spell.Teleport:
-				var tile_type = map[x][y].type
-				if(!tile_type in WALKABLES || shifter_at(x, y)): return
-				playerCoords = Vector2(x, y)
+		if(x != playerCoords.x or y != playerCoords.y):
+			match spell:
+				Spell.Destroy:
+					if(map[x][y].type == Tile.VDoor):
+						update_cell(x, y, Tile.VDoorOpen)
+					elif(map[x][y].type == Tile.HDoor):
+						update_cell(x, y, Tile.HDoorOpen)
+					elif(!shifter_at(x, y)):
+						if(x == playerCoords.x):
+							update_cell(x, y, Tile.VDoor)
+						else:
+							update_cell(x, y, Tile.HDoor)
 		finish_spell()
 		call_deferred("update_visuals")
 	
@@ -666,10 +669,10 @@ func spawn_rooms(cell:Cell):
 				[0,0,1],
 				[0,1,1]
 			], Tile.Wall)):
-				if(cell.x == 0 or cell.x == LEVEL_SIZE-1):
-					update_cell(cell.x, cell.y, Tile.Pit)
-				else: 
-					update_cell(cell.x, cell.y, Tile.VDoor)
+#				if(cell.x == 0 or cell.x == LEVEL_SIZE-1):
+				update_cell(cell.x, cell.y, Tile.Pit)
+#				else: 
+#					update_cell(cell.x, cell.y, Tile.VDoor)
 				cell.set_neighbours([
 					[0,0,0],
 					[0,0,1],
@@ -749,17 +752,29 @@ func add_doors(cell:Cell):
 			if(cell.has_all_neighbours(surrounding, Tile.Pyramid) and
 			   cell.has_neighbour(below, Tile.Floor)):
 				update_cell(cell.x, cell.y, Tile.VDoor)
+		
+		Tile.Pit:
+			cell.set_neighbours([[0,1,0],[1,0,1],[0,1,0]], Tile.VDoor)
+			cell.set_neighbours([[1,0,1],[0,0,0],[1,0,1]], Tile.Weird)
 
 func rotate_doors(cell:Cell):
 	match cell.type:
 		Tile.VDoor:
 			var topAndBottom = [[0,1,0],[0,0,0],[0,1,0]]
 			var topAndBottomCells = cell.get_some_neighbours(topAndBottom)
-			var allWalls = true;
+			var leftAndRight = [[0,0,0],[1,0,1],[0,0,0]]
+			var leftAndRightCells = cell.get_some_neighbours(leftAndRight)
+			var makeHorizontal = true;
+			var keepVertical = true;
 			for neighbour in topAndBottomCells:
 				if(neighbour.type in WALKABLES):
-					allWalls = false
-			if(!allWalls):
+					makeHorizontal = false
+			for neighbour in leftAndRightCells:
+				if(neighbour.type in WALKABLES):
+					keepVertical = false
+			if(makeHorizontal && keepVertical):
+				update_cell(cell.x, cell.y, Tile.Wall)
+			elif(makeHorizontal):
 				update_cell(cell.x, cell.y, Tile.HDoor)
 
 func add_ladder():
@@ -817,12 +832,15 @@ func shifter_at(x, y):
 	
 func destroy_shifters(x, y):
 	var toRemove = []
+	var toDelete = []
 	for i in range(shifters.size()):
 		if(shifters[i].x == x and shifters[i].y == y):
 			toRemove.append(i)
-			shifters[i].remove()
+			toDelete.append(shifters[i])
 	for i in toRemove:
 		shifters.remove(i)
+	for shifter in toDelete:
+		shifter.delete()
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
