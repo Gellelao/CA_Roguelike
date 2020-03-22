@@ -382,6 +382,34 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="Skulls" type="ColorRect" parent="CanvasLayer"]
+margin_left = 96.0
+margin_top = 128.0
+margin_right = 136.0
+margin_bottom = 136.0
+color = Color( 0.396078, 0.396078, 0.396078, 0.568627 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SkullsWord" type="Label" parent="CanvasLayer/Skulls"]
+margin_right = 40.0
+margin_bottom = 14.0
+custom_fonts/font = ExtResource( 28 )
+text = "SKULLS"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SkullsValue" type="Label" parent="CanvasLayer/Skulls"]
+margin_left = 32.0
+margin_right = 40.0
+margin_bottom = 14.0
+custom_fonts/font = ExtResource( 28 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="Win" type="ColorRect" parent="CanvasLayer"]
 visible = false
 margin_left = 8.0
@@ -526,7 +554,7 @@ margin_right = 80.0
 margin_bottom = 94.0
 custom_fonts/font = ExtResource( 28 )
 custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
-text = "RESTART"
+text = "YES"
 flat = true
 __meta__ = {
 "_editor_description_": ""
@@ -539,7 +567,7 @@ margin_right = 75.0
 margin_bottom = 118.0
 custom_fonts/font = ExtResource( 28 )
 custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
-text = "MENU"
+text = "NO"
 flat = true
 __meta__ = {
 "_editor_description_": ""

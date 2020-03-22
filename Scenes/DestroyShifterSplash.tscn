@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="ParticlesMaterial" id=1]
+flag_disable_z = true
+direction = Vector3( 1, 5, 0 )
+spread = 180.0
+gravity = Vector3( 300, 700, 0 )
+initial_velocity = 79.21
+initial_velocity_random = 1.0
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+color = Color( 1, 0.984314, 0.501961, 1 )
+hue_variation = -0.14
+hue_variation_random = 0.14
+
+[node name="DeathSplash" type="Particles2D"]
+position = Vector2( 0, 8 )
+amount = 50
+lifetime = 20.82
+speed_scale = 0.5
+explosiveness = 0.91
+randomness = 0.2
+process_material = SubResource( 1 )

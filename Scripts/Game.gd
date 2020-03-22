@@ -16,12 +16,14 @@ const LEVEL_SIZE = 15 # Levels are square
 const SHIFTERS_PER_LEVEL = [5, 8, 12, 15, 20]
 const ShifterScene = preload("res://Scenes/Shifter.tscn")
 const DeathSplash = preload("res://Scenes/DeathSplash.tscn")
+const DestroyShifterSplash = preload("res://Scenes/DestroyShifterSplash.tscn")
 var LEVEL_NUMBER = 0
+var SKULLS = 0
 var shifters = []
 
 enum Direction {North, South, East, West}
 enum Spell {None, Destroy, Summon, Teleport}
-var SpellRanges = [0, 1, 1, 2]
+var SpellRange = 2 #(range of 1 only includes player's current cell)
 var mana
 var maxMana = 4
 enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, 
@@ -242,6 +244,9 @@ class Shifter extends Cell:
 				if(get_some_neighbours(wallSymmetries[i])[0].type == Tile.Pit):
 					set_neighbours(wallSymmetries[i], Tile.FilledPit)
 					game.destroy_shifters(x, y)
+					game.SKULLS += 1
+					game.shifter_splash(self)
+					game.update_skulls()
 					return
 			if(self.neighbours_are_walkable(wallSymmetries[i]) and !neighbours_are_shifters(wallSymmetries[i])):
 				direction = i
@@ -323,6 +328,7 @@ func _ready():
 	cursor.z_index = 10
 	build_level()
 	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
+	$CanvasLayer/Skulls/SkullsValue.text = str(SKULLS)
 
 func _input(event):
 	if !event.is_pressed(): 
@@ -357,6 +363,7 @@ func build_level():
 	mana = maxMana
 	$CanvasLayer/Mana.rect_size = Vector2(mana*8, 8)
 	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
+	$CanvasLayer/Skulls/SkullsValue.text = str(SKULLS)
 	
 	# Clear out shifters, being cautious to call remove on each just cause I don't know exactly how that all works
 	for i in range(shifters.size()):
@@ -428,8 +435,16 @@ func build_level():
 			if(map[x][y].type == Tile.Floor && !shifter_at(x, y)):
 				playerCoords = Vector2(x, y)
 	
-	# Sanity check - is there a ladder and at least one pit?
-	if(no_ladders_yet or no_levers_yet): build_level()
+	# Sanity check - is there a ladder, lever, pit, and shifter?
+	var noPits = true
+	var noLever = true
+	for x in range(LEVEL_SIZE):
+		for y in range(LEVEL_SIZE):
+			if(map[x][y].type == Tile.Pit):
+				noPits = false
+			if(map[x][y].type == Tile.LeverOff):
+				noLever = false
+	if(no_ladders_yet or noPits or noLever or shifters.size() == 0): build_level()
 	
 	# call_deferred("update_visuals") # Don't want this because it moves shifters before you can move
 	player.position = playerCoords * TILE_SIZE # This should achieve the same thing
@@ -511,7 +526,7 @@ func move_cursor(delta):
 	# While diagonals could be in range, we don't want them so we filter them out as they will not be round numbers like i
 	var distanceFromPlayer = Vector2(x, y).distance_to(playerCoords)
 	var inRange = false
-	for i in range(SpellRanges[current_spell]+1):
+	for i in range(SpellRange):
 		if(distanceFromPlayer == i): inRange = true
 		
 	if(!inRange): return
@@ -789,6 +804,8 @@ func add_ladder():
 						if(cell.count_all_neighbours(Tile.Faceted) >= 3):
 							update_cell(cell.x, cell.y, Tile.Ladder)
 							no_ladders_yet = false;
+	if(no_ladders_yet): #Then just force one
+		update_cell(randi() % LEVEL_SIZE, randi() % LEVEL_SIZE, Tile.Ladder)
 
 func flip_array_v(array):
 	var tempTop = array.pop_front()
@@ -841,6 +858,17 @@ func destroy_shifters(x, y):
 		shifters.remove(i)
 	for shifter in toDelete:
 		shifter.delete()
+
+func shifter_splash(shifter):
+	var destroyShifterSplash = DestroyShifterSplash.instance()
+	destroyShifterSplash.position = Vector2(shifter.x*TILE_SIZE, shifter.y*TILE_SIZE)
+	self.add_child(destroyShifterSplash)
+	yield(get_tree().create_timer(1),"timeout")
+	destroyShifterSplash.queue_free()
+
+func update_skulls():
+	$CanvasLayer/Skulls/SkullsValue.text = str(SKULLS)
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
@@ -848,6 +876,7 @@ func destroy_shifters(x, y):
 
 func _on_StartButton_pressed():
 	LEVEL_NUMBER = 0
+	SKULLS = 0
 	build_level()
 	$CanvasLayer/Win.visible = false
 	$CanvasLayer/GameOver.visible = false
