@@ -2,7 +2,6 @@ extends Node2D
 
 #CA Stuff
 const NUMBER_OF_ORIGINS = 4
-const ITERATIONS_PER_LEVEL = [30, 20, 15, 10, 5]
 const GENERATION_WAIT_TIME = 0.005
 const VON_NEUMANN = [
 	[0,1,0],
@@ -13,19 +12,21 @@ const VON_NEUMANN = [
 # Level stuff
 const TILE_SIZE = 8
 const LEVEL_SIZE = 15 # Levels are square
-const SHIFTERS_PER_LEVEL = [5, 8, 12, 15, 20]
+const ManaUpgradeCost = 2
+const RangeUpgradeCost = 1
+const LifeUpgradeCost = 5
 const ShifterScene = preload("res://Scenes/Shifter.tscn")
 const DeathSplash = preload("res://Scenes/DeathSplash.tscn")
 const DestroyShifterSplash = preload("res://Scenes/DestroyShifterSplash.tscn")
-var LEVEL_NUMBER = 0
-var SKULLS = 0
+var LEVEL_NUMBER
+var SKULLS
 var shifters = []
 
 enum Direction {North, South, East, West}
 enum Spell {None, Destroy, Summon, Teleport}
-var SpellRange = 2 #(range of 1 only includes player's current cell)
+var SpellRange
 var mana
-var maxMana = 4
+var maxMana
 enum Tile {Floor, Wall, Pit, HCorridor, VCorridor, Crossroads, Floor1, Floor2, 
 		   Faceted, VDoor, VDoorOpen, Ladder, HDoor, HDoorOpen, Pyramid, Backslash,
 		   LeverOff, LeverOn, Weird, FilledPit}
@@ -326,6 +327,10 @@ func _ready():
 	randomize()
 	cursor.visible = false;
 	cursor.z_index = 10
+	maxMana = 4
+	SpellRange = 2 #(range of 1 only includes player's current cell)
+	SKULLS = 0
+	LEVEL_NUMBER = 0
 	build_level()
 	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
 	$CanvasLayer/Skulls/SkullsValue.text = str(SKULLS)
@@ -396,7 +401,7 @@ func build_level():
 		tile_map.set_cell(originX, originY, floorCell.type)
 	
 	# DO SOME CELLULAR AUTOMATA
-	for i in range(ITERATIONS_PER_LEVEL[LEVEL_NUMBER]):
+	for i in range(20):
 		yield(get_tree().create_timer(GENERATION_WAIT_TIME),"timeout") # Add a small wait so we can watch it generate
 		update_automata_make_halls()
 	
@@ -421,7 +426,7 @@ func build_level():
 	update_automata_rotate_doors()
 	
 	# Spawn shifters
-	for i in range(SHIFTERS_PER_LEVEL[LEVEL_NUMBER]):
+	for i in range(3 + LEVEL_NUMBER):
 		var randX = randi() % LEVEL_SIZE
 		var randY = randi() % LEVEL_SIZE
 		if(map[randX][randY].type == Tile.Ladder): continue # We don't want to spawn shifters on ladders in case that shifter can't move and thus obscures the ladder forever
@@ -486,6 +491,8 @@ func update_map():
 			map[x][y] = Cell.new(self, x, y, tile_map.get_cell(x, y))
 
 func handle_input(input):
+	if($CanvasLayer/Upgrade.is_visible_in_tree()):
+		return
 	if(input.has("move")):
 		if(current_spell != Spell.None):
 			move_cursor(input["move"])
@@ -597,10 +604,11 @@ func update_cell(x, y, type):
 func go_to_next_level():
 	LEVEL_NUMBER += 1
 	$CanvasLayer/Level/LevelValue.text = str(LEVEL_NUMBER)
-	if(LEVEL_NUMBER >= 5):
+	if(LEVEL_NUMBER >= 15):
 		yield(get_tree().create_timer(0.5),"timeout")
 		$CanvasLayer/Win.visible = true
-	else: build_level()
+	else:
+		$CanvasLayer/Upgrade.visible = true
 
 #======================
 #                     #
@@ -882,6 +890,7 @@ func _on_StartButton_pressed():
 	$CanvasLayer/GameOver.visible = false
 	$CanvasLayer/Escape.visible = false
 	$CanvasLayer/Home.visible = false
+	$CanvasLayer/Upgrade.visible = false
 
 
 func _on_MenuButton_pressed():
@@ -889,6 +898,26 @@ func _on_MenuButton_pressed():
 	$CanvasLayer/GameOver.visible = false
 	$CanvasLayer/Escape.visible = false
 	$CanvasLayer/Home.visible = true
+	$CanvasLayer/Upgrade.visible = false
 
 func _on_NoButton_pressed():
 	$CanvasLayer/Escape.visible = false
+
+
+func _on_Continue_pressed():
+	build_level()
+	$CanvasLayer/Upgrade.visible = false
+
+
+func _on_UpRange_pressed():
+	if(SKULLS >= RangeUpgradeCost):
+		SpellRange += 1
+		SKULLS -= RangeUpgradeCost
+		$CanvasLayer/Skulls/SkullsValue.text = str(SKULLS)
+
+
+func _on_UpMana_pressed():
+	if(SKULLS >= ManaUpgradeCost):
+		maxMana += 1
+		SKULLS -= ManaUpgradeCost
+		$CanvasLayer/Skulls/SkullsValue.text = str(SKULLS)

@@ -517,6 +517,130 @@ custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
 text = "MENU"
 flat = true
 
+[node name="Upgrade" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 128.0
+margin_bottom = 128.0
+color = Color( 1, 0.831373, 0.639216, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="UpgradeTiles" type="TileMap" parent="CanvasLayer/Upgrade"]
+position = Vector2( -8, -8 )
+tile_set = SubResource( 1 )
+cell_size = Vector2( 8, 8 )
+format = 1
+tile_data = PoolIntArray( -1, 1, 0, -65536, 1, 0, -65535, 1, 0, -65534, 1, 0, -65533, 1, 0, -65532, 1, 0, -65531, 1, 0, -65530, 1, 0, -65529, 1, 0, -65528, 1, 0, -65527, 1, 0, -65526, 1, 0, -65525, 1, 0, -65524, 1, 0, -65523, 1, 0, -65522, 1, 0, -65521, 1, 0, 65535, 1, 0, 131071, 1, 0, 65537, 4, 0, 65538, 4, 0, 65539, 4, 0, 65540, 4, 0, 65541, 1, 0, 65542, 1, 0, 65543, 1, 0, 65544, 1, 0, 65545, 1, 0, 65546, 1, 0, 65547, 1, 0, 65548, 4, 0, 65549, 4, 0, 65550, 4, 0, 65551, 4, 0, 196607, 1, 0, 131073, 4, 0, 131074, 4, 0, 131075, 4, 0, 131076, 4, 0, 131077, 1, 0, 131078, 3, 0, 131079, 3, 0, 131080, 3, 0, 131081, 3, 0, 131082, 3, 0, 131083, 1, 0, 131084, 4, 0, 131085, 4, 0, 131086, 4, 0, 131087, 4, 0, 262143, 1, 0, 196609, 4, 0, 196610, 4, 0, 196611, 4, 0, 196612, 4, 0, 196613, 1, 0, 196614, 1, 0, 196615, 1, 0, 196616, 1, 0, 196617, 1, 0, 196618, 1, 0, 196619, 1, 0, 196620, 4, 0, 196621, 4, 0, 196622, 4, 0, 196623, 4, 0, 327679, 1, 0, 262145, 4, 0, 262146, 4, 0, 262147, 4, 0, 262148, 4, 0, 262149, 4, 0, 262150, 4, 0, 262151, 4, 0, 262152, 4, 0, 262153, 4, 0, 262154, 4, 0, 262155, 4, 0, 262156, 4, 0, 262157, 4, 0, 262158, 4, 0, 262159, 4, 0, 393215, 1, 0, 327681, 4, 0, 327682, 4, 0, 327683, 4, 0, 327684, 4, 0, 327685, 4, 0, 327686, 4, 0, 327687, 4, 0, 327688, 4, 0, 327689, 4, 0, 327690, 4, 0, 327691, 4, 0, 327692, 4, 0, 327693, 4, 0, 327694, 4, 0, 327695, 4, 0, 458751, 1, 0, 393217, 4, 0, 393218, 4, 0, 393219, 4, 0, 393220, 4, 0, 393221, 4, 0, 393222, 4, 0, 393223, 4, 0, 393224, 4, 0, 393225, 4, 0, 393226, 4, 0, 393227, 4, 0, 393228, 4, 0, 393229, 4, 0, 393230, 4, 0, 393231, 4, 0, 524287, 1, 0, 458753, 1, 0, 458754, 12, 0, 458755, 12, 0, 458756, 12, 0, 458757, 1, 0, 458758, 4, 0, 458759, 4, 0, 458760, 4, 0, 458761, 4, 0, 458762, 4, 0, 458763, 1, 0, 458764, 12, 0, 458765, 12, 0, 458766, 12, 0, 458767, 1, 0, 589823, 1, 0, 524289, 9, 0, 524290, 3, 0, 524291, 3, 0, 524292, 3, 0, 524293, 9, 0, 524294, 4, 0, 524295, 4, 0, 524296, 4, 0, 524297, 4, 0, 524298, 4, 0, 524299, 9, 0, 524300, 3, 0, 524301, 3, 0, 524302, 3, 0, 524303, 9, 0, 655359, 1, 0, 589825, 1, 0, 589826, 12, 0, 589827, 0, 0, 589828, 12, 0, 589829, 1, 0, 589830, 4, 0, 589831, 4, 0, 589832, 4, 0, 589833, 4, 0, 589834, 4, 0, 589835, 1, 0, 589836, 12, 0, 589837, 0, 0, 589838, 12, 0, 589839, 1, 0, 720895, 1, 0, 655361, 4, 0, 655362, 4, 0, 655363, 4, 0, 655364, 4, 0, 655365, 4, 0, 655366, 4, 0, 655367, 4, 0, 655368, 4, 0, 655369, 4, 0, 655370, 4, 0, 655371, 4, 0, 655372, 4, 0, 655373, 4, 0, 655374, 4, 0, 655375, 4, 0, 786431, 1, 0, 720897, 4, 0, 720898, 4, 0, 720899, 4, 0, 720900, 4, 0, 720901, 4, 0, 720902, 4, 0, 720903, 4, 0, 720904, 4, 0, 720905, 4, 0, 720906, 4, 0, 720907, 4, 0, 720908, 4, 0, 720909, 4, 0, 720910, 4, 0, 720911, 4, 0, 851967, 1, 0, 786433, 4, 0, 786434, 4, 0, 786435, 4, 0, 786436, 4, 0, 786437, 1, 0, 786438, 12, 0, 786439, 12, 0, 786440, 12, 0, 786441, 12, 0, 786442, 12, 0, 786443, 1, 0, 786444, 4, 0, 786445, 4, 0, 786446, 4, 0, 786447, 4, 0, 917503, 1, 0, 851969, 4, 0, 851970, 4, 0, 851971, 4, 0, 851972, 4, 0, 851973, 9, 0, 851974, 3, 0, 851975, 3, 0, 851976, 3, 0, 851977, 3, 0, 851978, 3, 0, 851979, 9, 0, 851980, 4, 0, 851981, 4, 0, 851982, 4, 0, 851983, 4, 0, 983039, 1, 0, 917505, 4, 0, 917506, 4, 0, 917507, 4, 0, 917508, 4, 0, 917509, 1, 0, 917510, 12, 0, 917511, 12, 0, 917512, 12, 0, 917513, 12, 0, 917514, 12, 0, 917515, 1, 0, 917516, 4, 0, 917517, 4, 0, 917518, 4, 0, 917519, 4, 0, 1048575, 1, 0, 983041, 4, 0, 983042, 4, 0, 983043, 4, 0, 983044, 4, 0, 983045, 4, 0, 983046, 4, 0, 983047, 4, 0, 983048, 4, 0, 983049, 4, 0, 983050, 4, 0, 983051, 4, 0, 983052, 4, 0, 983053, 4, 0, 983054, 4, 0, 983055, 4, 0 )
+
+[node name="Title" type="RichTextLabel" parent="CanvasLayer/Upgrade"]
+margin_left = 48.0
+margin_top = 8.0
+margin_right = 76.0
+margin_bottom = 24.0
+custom_fonts/normal_font = ExtResource( 28 )
+text = "UPGRADE"
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="RangePrice" type="RichTextLabel" parent="CanvasLayer/Upgrade"]
+margin_left = 18.0
+margin_top = 63.0
+margin_right = 46.0
+margin_bottom = 79.0
+custom_fonts/normal_font = ExtResource( 28 )
+text = "1"
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="LifePrice" type="RichTextLabel" parent="CanvasLayer/Upgrade"]
+visible = false
+margin_left = 58.0
+margin_top = 63.0
+margin_right = 86.0
+margin_bottom = 79.0
+custom_fonts/normal_font = ExtResource( 28 )
+text = "5"
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="ManaPrice" type="RichTextLabel" parent="CanvasLayer/Upgrade"]
+margin_left = 98.0
+margin_top = 63.0
+margin_right = 126.0
+margin_bottom = 79.0
+custom_fonts/normal_font = ExtResource( 28 )
+text = "2"
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="UpRange" type="Button" parent="CanvasLayer/Upgrade"]
+margin_left = 1.0
+margin_top = 50.0
+margin_right = 41.0
+margin_bottom = 70.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "+RANGE"
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="UpLife" type="Button" parent="CanvasLayer/Upgrade"]
+visible = false
+margin_left = 44.0
+margin_top = 50.0
+margin_right = 76.0
+margin_bottom = 70.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "+LIFE"
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="UpMana" type="Button" parent="CanvasLayer/Upgrade"]
+margin_left = 84.0
+margin_top = 50.0
+margin_right = 115.0
+margin_bottom = 70.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "MANA"
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="Continue" type="Button" parent="CanvasLayer/Upgrade"]
+margin_left = 37.0
+margin_top = 90.0
+margin_right = 84.0
+margin_bottom = 110.0
+custom_fonts/font = ExtResource( 28 )
+custom_colors/font_color_hover = Color( 1, 0.960784, 0.568627, 1 )
+text = "CONTINUE"
+flat = true
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
 [node name="Escape" type="ColorRect" parent="CanvasLayer"]
 visible = false
 margin_left = 8.0
@@ -672,6 +796,9 @@ hframes = 3
 [connection signal="pressed" from="CanvasLayer/Win/MenuButton2" to="." method="_on_MenuButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/GameOver/RestartButton" to="." method="_on_StartButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/GameOver/MenuButton" to="." method="_on_MenuButton_pressed"]
+[connection signal="pressed" from="CanvasLayer/Upgrade/UpRange" to="." method="_on_UpRange_pressed"]
+[connection signal="pressed" from="CanvasLayer/Upgrade/UpMana" to="." method="_on_UpMana_pressed"]
+[connection signal="pressed" from="CanvasLayer/Upgrade/Continue" to="." method="_on_Continue_pressed"]
 [connection signal="pressed" from="CanvasLayer/Escape/YesButton" to="." method="_on_MenuButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Escape/NoButton" to="." method="_on_NoButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Home/StartButton" to="." method="_on_StartButton_pressed"]
