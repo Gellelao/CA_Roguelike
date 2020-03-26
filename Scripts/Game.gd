@@ -12,6 +12,9 @@ const VON_NEUMANN = [
 # Level stuff
 const TILE_SIZE = 8
 const LEVEL_SIZE = 15 # Levels are square
+const BASE_SHIFTER_COUNT = 3
+const BASE_MAX_MANA = 4
+const BASE_SPELL_RANGE = 2 #(range of 1 only includes player's current cell)
 const ManaUpgradeCost = 2
 const RangeUpgradeCost = 1
 const LifeUpgradeCost = 5
@@ -244,10 +247,11 @@ class Shifter extends Cell:
 			if(neighboursInDir.size() > 0):
 				if(get_some_neighbours(wallSymmetries[i])[0].type == Tile.Pit):
 					set_neighbours(wallSymmetries[i], Tile.FilledPit)
-					game.destroy_shifters(x, y)
 					game.SKULLS += 1
 					game.shifter_splash(self)
 					game.update_skulls()
+					game.remove_shifter_from_list(self)
+					self.delete()
 					return
 			if(self.neighbours_are_walkable(wallSymmetries[i]) and !neighbours_are_shifters(wallSymmetries[i])):
 				direction = i
@@ -327,8 +331,8 @@ func _ready():
 	randomize()
 	cursor.visible = false;
 	cursor.z_index = 10
-	maxMana = 4
-	SpellRange = 2 #(range of 1 only includes player's current cell)
+	maxMana = BASE_MAX_MANA
+	SpellRange = BASE_SPELL_RANGE #(range of 1 only includes player's current cell)
 	SKULLS = 0
 	LEVEL_NUMBER = 0
 	build_level()
@@ -426,7 +430,7 @@ func build_level():
 	update_automata_rotate_doors()
 	
 	# Spawn shifters
-	for i in range(3 + LEVEL_NUMBER):
+	for i in range(BASE_SHIFTER_COUNT + LEVEL_NUMBER):
 		var randX = randi() % LEVEL_SIZE
 		var randY = randi() % LEVEL_SIZE
 		if(map[randX][randY].type == Tile.Ladder): continue # We don't want to spawn shifters on ladders in case that shifter can't move and thus obscures the ladder forever
@@ -587,14 +591,16 @@ func update_visuals():
 		return
 		
 	for shifter in shifters:
+		var weakShifter = weakref(shifter)
 		shifter.move();
-		shifter.update_visuals()
-		if(shifter.x == playerCoords.x and shifter.y == playerCoords.y):
-			var deathSplash = DeathSplash.instance()
-			player.add_child(deathSplash)
-			yield(get_tree().create_timer(0.5),"timeout")
-			deathSplash.queue_free()
-			$CanvasLayer/GameOver.visible = true
+		if(weakShifter.get_ref()):
+			shifter.update_visuals()
+			if(shifter.x == playerCoords.x and shifter.y == playerCoords.y):
+				var deathSplash = DeathSplash.instance()
+				player.add_child(deathSplash)
+				yield(get_tree().create_timer(0.5),"timeout")
+				deathSplash.queue_free()
+				$CanvasLayer/GameOver.visible = true
 	#update_automata()
 
 func update_cell(x, y, type):
@@ -855,17 +861,21 @@ func shifter_at(x, y):
 		if(shifter.x == x and shifter.y == y): return true
 	return false
 	
-func destroy_shifters(x, y):
-	var toRemove = []
-	var toDelete = []
-	for i in range(shifters.size()):
-		if(shifters[i].x == x and shifters[i].y == y):
-			toRemove.append(i)
-			toDelete.append(shifters[i])
-	for i in toRemove:
-		shifters.remove(i)
-	for shifter in toDelete:
-		shifter.delete()
+#func destroy_shifters(x, y):
+#	var toRemove = []
+#	var toDelete = []
+#	for i in range(shifters.size()):
+#		if(shifters[i].x == x and shifters[i].y == y):
+#			toRemove.append(i)
+#			toDelete.append(shifters[i])
+#	for i in toRemove:
+#		shifters.remove(i)
+#	for shifter in toDelete:
+#		shifter.delete()
+
+func remove_shifter_from_list(toRemove):
+	var index = shifters.find(toRemove)
+	shifters.remove(index)
 
 func shifter_splash(shifter):
 	var destroyShifterSplash = DestroyShifterSplash.instance()
